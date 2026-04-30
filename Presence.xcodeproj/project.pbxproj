@@ -1,0 +1,552 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
+		42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACECB606D5B3294C47680676 /* AppState.swift */; };
+		7F90BF5296EC3F2259A6A8B8 /* PresenceWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9357E4DC89D047FD6BEBD93F /* PresenceLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */; };
+		B09B48223C120F962EAB0F89 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
+		C208D319E129CD5D4A5B679F /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
+		F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		229FD8918125E0891BE1D948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1DEE12F1DC178FB1BB8A58D7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 52E98D6C2B85A68A026B467F;
+			remoteInfo = PresenceWidget;
+		};
+		E4A264ABAFFD8FDAF652D92C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1DEE12F1DC178FB1BB8A58D7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3E8EE8100DF01D736FA1E5BD;
+			remoteInfo = Presence;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		66089FDEB5F09A34097B9A64 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7F90BF5296EC3F2259A6A8B8 /* PresenceWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		03C70E0BBC127240BA8C3D7C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		043FE37783BD7563D01AC040 /* Presence.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Presence.entitlements; sourceTree = "<group>"; };
+		08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceApp.swift; sourceTree = "<group>"; };
+		13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceActivityAttributes.swift; sourceTree = "<group>"; };
+		355766B72D2B8BD666F42D86 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		71CAF04434E6B48231150EAD /* Presence.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Presence.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PresenceWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceLiveActivityWidget.swift; sourceTree = "<group>"; };
+		A5D3FF07465DBB02B4975483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		ACECB606D5B3294C47680676 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		D587EFD2262F16AC122C36B8 /* PresenceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PresenceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		2599AD951C5B9DA557193D2D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9D7048FA8BF7F53427DDE456 /* LiveActivity */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		5C87603A1BE01C8C8C695170 /* PresenceWidget */ = {
+			isa = PBXGroup;
+			children = (
+				A5D3FF07465DBB02B4975483 /* Info.plist */,
+				81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */,
+			);
+			path = PresenceWidget;
+			sourceTree = "<group>";
+		};
+		6D15119053B1DC06E3976BDD = {
+			isa = PBXGroup;
+			children = (
+				A7404CAA8D314C5789F7359D /* Presence */,
+				6D28A26FA0FDCE5D322E20AB /* PresenceTests */,
+				5C87603A1BE01C8C8C695170 /* PresenceWidget */,
+				2599AD951C5B9DA557193D2D /* Shared */,
+				EAD4EEF605BF74CCD4EA0D3D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6D28A26FA0FDCE5D322E20AB /* PresenceTests */ = {
+			isa = PBXGroup;
+			children = (
+				355766B72D2B8BD666F42D86 /* Info.plist */,
+			);
+			path = PresenceTests;
+			sourceTree = "<group>";
+		};
+		9D7048FA8BF7F53427DDE456 /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */,
+			);
+			path = LiveActivity;
+			sourceTree = "<group>";
+		};
+		A7404CAA8D314C5789F7359D /* Presence */ = {
+			isa = PBXGroup;
+			children = (
+				03C70E0BBC127240BA8C3D7C /* Info.plist */,
+				043FE37783BD7563D01AC040 /* Presence.entitlements */,
+				E8E5EB05A76C03676F57DD4E /* App */,
+			);
+			path = Presence;
+			sourceTree = "<group>";
+		};
+		E8E5EB05A76C03676F57DD4E /* App */ = {
+			isa = PBXGroup;
+			children = (
+				ACECB606D5B3294C47680676 /* AppState.swift */,
+				08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		EAD4EEF605BF74CCD4EA0D3D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				71CAF04434E6B48231150EAD /* Presence.app */,
+				D587EFD2262F16AC122C36B8 /* PresenceTests.xctest */,
+				7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3E8EE8100DF01D736FA1E5BD /* Presence */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A2AF333094736A7047B3858B /* Build configuration list for PBXNativeTarget "Presence" */;
+			buildPhases = (
+				C3B2D7C5CDAB19E9EEFB3011 /* Sources */,
+				66089FDEB5F09A34097B9A64 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A590CBEB9BE72D8298B6466B /* PBXTargetDependency */,
+			);
+			name = Presence;
+			packageProductDependencies = (
+			);
+			productName = Presence;
+			productReference = 71CAF04434E6B48231150EAD /* Presence.app */;
+			productType = "com.apple.product-type.application";
+		};
+		52E98D6C2B85A68A026B467F /* PresenceWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5DCB926F469737E00EC5EB13 /* Build configuration list for PBXNativeTarget "PresenceWidget" */;
+			buildPhases = (
+				6A5433EB3ABF57F582621453 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PresenceWidget;
+			packageProductDependencies = (
+			);
+			productName = PresenceWidget;
+			productReference = 7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		6A3A58346725A1905FF48351 /* PresenceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7B1A8DD1E797A9AAEFB89F31 /* Build configuration list for PBXNativeTarget "PresenceTests" */;
+			buildPhases = (
+				A4A5E6CA4201264B09BA8C42 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1708BC152A5AE17D672E8A5B /* PBXTargetDependency */,
+			);
+			name = PresenceTests;
+			packageProductDependencies = (
+			);
+			productName = PresenceTests;
+			productReference = D587EFD2262F16AC122C36B8 /* PresenceTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1DEE12F1DC178FB1BB8A58D7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					3E8EE8100DF01D736FA1E5BD = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					52E98D6C2B85A68A026B467F = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C251C4F1C435C52FE8DED32E /* Build configuration list for PBXProject "Presence" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 6D15119053B1DC06E3976BDD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = EAD4EEF605BF74CCD4EA0D3D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3E8EE8100DF01D736FA1E5BD /* Presence */,
+				6A3A58346725A1905FF48351 /* PresenceTests */,
+				52E98D6C2B85A68A026B467F /* PresenceWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6A5433EB3ABF57F582621453 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C208D319E129CD5D4A5B679F /* PresenceActivityAttributes.swift in Sources */,
+				9357E4DC89D047FD6BEBD93F /* PresenceLiveActivityWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A4A5E6CA4201264B09BA8C42 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B09B48223C120F962EAB0F89 /* PresenceActivityAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C3B2D7C5CDAB19E9EEFB3011 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */,
+				0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */,
+				F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1708BC152A5AE17D672E8A5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3E8EE8100DF01D736FA1E5BD /* Presence */;
+			targetProxy = E4A264ABAFFD8FDAF652D92C /* PBXContainerItemProxy */;
+		};
+		A590CBEB9BE72D8298B6466B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 52E98D6C2B85A68A026B467F /* PresenceWidget */;
+			targetProxy = 229FD8918125E0891BE1D948 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1F3B26D85CFD4BECFC7E138D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		21F6B47DC731AE3AD1E6AAE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = PresenceWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.presence.app.widget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		29204D2917D9D3E71BDBCA9D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		59131C671B4382411B4A2082 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Presence/Presence.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = Presence/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.presence.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6FF2EA15EF2720A9E5BFADBC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = PresenceTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.presence.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Presence.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Presence";
+			};
+			name = Debug;
+		};
+		7DA8DDECC5A41F9A7569BA23 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = PresenceWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.presence.app.widget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AF5CC8BA738F820B0BDB00E2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = PresenceTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.presence.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Presence.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Presence";
+			};
+			name = Release;
+		};
+		EAF08B2DF7EADBEA65F023E6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Presence/Presence.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = Presence/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.presence.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5DCB926F469737E00EC5EB13 /* Build configuration list for PBXNativeTarget "PresenceWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21F6B47DC731AE3AD1E6AAE7 /* Debug */,
+				7DA8DDECC5A41F9A7569BA23 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7B1A8DD1E797A9AAEFB89F31 /* Build configuration list for PBXNativeTarget "PresenceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FF2EA15EF2720A9E5BFADBC /* Debug */,
+				AF5CC8BA738F820B0BDB00E2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A2AF333094736A7047B3858B /* Build configuration list for PBXNativeTarget "Presence" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EAF08B2DF7EADBEA65F023E6 /* Debug */,
+				59131C671B4382411B4A2082 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C251C4F1C435C52FE8DED32E /* Build configuration list for PBXProject "Presence" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1F3B26D85CFD4BECFC7E138D /* Debug */,
+				29204D2917D9D3E71BDBCA9D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1DEE12F1DC178FB1BB8A58D7 /* Project object */;
+}
