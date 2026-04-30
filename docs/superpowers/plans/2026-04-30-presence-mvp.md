@@ -366,6 +366,7 @@ import SwiftData
 
 @Model
 final class WorkplaceConfigModel {
+    @Attribute(.unique) var singletonKey: String
     var latitude: Double
     var longitude: Double
     var radiusMeters: Double
@@ -374,6 +375,7 @@ final class WorkplaceConfigModel {
     var updatedAt: Date
 
     init(latitude: Double, longitude: Double, radiusMeters: Double, completedSetup: Bool = true, createdAt: Date = Date(), updatedAt: Date = Date()) {
+        self.singletonKey = "workplace"
         self.latitude = latitude
         self.longitude = longitude
         self.radiusMeters = radiusMeters
@@ -416,8 +418,8 @@ final class AttendanceDayModel {
 @Model
 final class HolidayCalendarCacheModel {
     @Attribute(.unique) var cacheKey: String
-    var year: Int
-    var region: String
+    private(set) var year: Int
+    private(set) var region: String
     var payloadJSON: String
     var sourceName: String
     var sourceUpdatedAt: Date?
@@ -460,7 +462,11 @@ final class AttendanceStore {
     }
 
     func saveWorkplace(latitude: Double, longitude: Double, radiusMeters: Double, now: Date = Date()) throws {
-        let descriptor = FetchDescriptor<WorkplaceConfigModel>()
+        let key = "workplace"
+        var descriptor = FetchDescriptor<WorkplaceConfigModel>(
+            predicate: #Predicate { $0.singletonKey == key }
+        )
+        descriptor.fetchLimit = 1
         let existing = try context.fetch(descriptor).first
 
         if let existing {
@@ -477,7 +483,12 @@ final class AttendanceStore {
     }
 
     func fetchWorkplace() throws -> WorkplaceConfigModel? {
-        try context.fetch(FetchDescriptor<WorkplaceConfigModel>()).first
+        let key = "workplace"
+        var descriptor = FetchDescriptor<WorkplaceConfigModel>(
+            predicate: #Predicate { $0.singletonKey == key }
+        )
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
     }
 
     func saveRegionEvent(_ event: PresenceEvent, isValidated: Bool) throws {
@@ -486,8 +497,9 @@ final class AttendanceStore {
     }
 
     func upsertAttendanceDay(_ day: AttendanceDay) throws {
+        let id = day.dayIdentifier
         var descriptor = FetchDescriptor<AttendanceDayModel>(
-            predicate: #Predicate { $0.dayIdentifier == day.dayIdentifier }
+            predicate: #Predicate { $0.dayIdentifier == id }
         )
         descriptor.fetchLimit = 1
 
@@ -505,7 +517,9 @@ final class AttendanceStore {
     }
 
     func fetchAttendanceDays(inMonth month: Date, calendar: Calendar = .current) throws -> [AttendanceDayModel] {
-        let interval = calendar.dateInterval(of: .month, for: month)!
+        guard let interval = calendar.dateInterval(of: .month, for: month) else {
+            throw AttendanceStoreError.invalidMonth(month)
+        }
         let start = dayIdentifier(for: interval.start, calendar: calendar)
         let end = dayIdentifier(for: interval.end.addingTimeInterval(-1), calendar: calendar)
         let descriptor = FetchDescriptor<AttendanceDayModel>(
@@ -514,6 +528,10 @@ final class AttendanceStore {
         )
         return try context.fetch(descriptor)
     }
+}
+
+enum AttendanceStoreError: Error, Equatable {
+    case invalidMonth(Date)
 }
 
 ```
@@ -891,7 +909,13 @@ struct HolidayService {
     @MainActor
     func cache(_ calendar: HolidayCalendar, in context: ModelContext, now: Date = Date()) throws {
         let payload = String(data: try JSONEncoder().encode(calendar), encoding: .utf8)!
-        let model = HolidayCalendarCacheModel(
+        let cacheKey = "\(calendar.region)-\(calendar.year)"
+        var descriptor = FetchDescriptor<HolidayCalendarCacheModel>(
+            predicate: #Predicate { $0.cacheKey == cacheKey }
+        )
+        descriptor.fetchLimit = 1
+
+        let model = try context.fetch(descriptor).first ?? HolidayCalendarCacheModel(
             year: calendar.year,
             region: calendar.region,
             payloadJSON: payload,
@@ -900,7 +924,16 @@ struct HolidayService {
             cachedAt: now,
             availability: .fresh
         )
-        context.insert(model)
+        model.payloadJSON = payload
+        model.sourceName = "holiday-calendar"
+        model.sourceUpdatedAt = nil
+        model.cachedAt = now
+        model.availabilityRawValue = HolidayDataAvailability.fresh.rawValue
+
+        if model.modelContext == nil {
+            context.insert(model)
+        }
+
         try context.save()
     }
 }

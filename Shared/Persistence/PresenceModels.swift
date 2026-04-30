@@ -3,6 +3,7 @@ import SwiftData
 
 @Model
 final class WorkplaceConfigModel {
+    @Attribute(.unique) var singletonKey: String
     var latitude: Double
     var longitude: Double
     var radiusMeters: Double
@@ -11,6 +12,7 @@ final class WorkplaceConfigModel {
     var updatedAt: Date
 
     init(latitude: Double, longitude: Double, radiusMeters: Double, completedSetup: Bool = true, createdAt: Date = Date(), updatedAt: Date = Date()) {
+        self.singletonKey = "workplace"
         self.latitude = latitude
         self.longitude = longitude
         self.radiusMeters = radiusMeters
@@ -53,8 +55,8 @@ final class AttendanceDayModel {
 @Model
 final class HolidayCalendarCacheModel {
     @Attribute(.unique) var cacheKey: String
-    var year: Int
-    var region: String
+    private(set) var year: Int
+    private(set) var region: String
     var payloadJSON: String
     var sourceName: String
     var sourceUpdatedAt: Date?
