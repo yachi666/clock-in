@@ -9,7 +9,16 @@ settings:
     SWIFT_VERSION: 6.0
     MARKETING_VERSION: 1.0
     CURRENT_PROJECT_VERSION: 1
-packages: {}
+schemes:
+  Presence:
+    build:
+      targets:
+        Presence: all
+        PresenceTests: [test]
+        PresenceWidget: all
+    test:
+      targets:
+        - PresenceTests
 targets:
   Presence:
     type: application
@@ -37,7 +46,6 @@ targets:
     platform: iOS
     sources:
       - path: PresenceTests
-      - path: Shared
     dependencies:
       - target: Presence
     settings:

@@ -11,7 +11,6 @@
 		42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACECB606D5B3294C47680676 /* AppState.swift */; };
 		7F90BF5296EC3F2259A6A8B8 /* PresenceWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9357E4DC89D047FD6BEBD93F /* PresenceLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */; };
-		B09B48223C120F962EAB0F89 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
 		C208D319E129CD5D4A5B679F /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
 		F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */; };
 /* End PBXBuildFile section */
@@ -246,7 +245,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B09B48223C120F962EAB0F89 /* PresenceActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
