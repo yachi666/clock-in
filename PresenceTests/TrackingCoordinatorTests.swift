@@ -44,7 +44,18 @@ final class TrackingCoordinatorTests: XCTestCase {
         (TrackingCoordinator(store: store, activityController: activity), store, activity)
     }
 
-    // MARK: - Pending (exactly 600 s = not yet validated)
+    // MARK: - Pending (sub-10-minute and exactly 600 s = not yet validated)
+
+    func testPendingBeforeDebounceWindowDoesNotPersistOrTouchActivity() async throws {
+        let (sut, store, activity) = makeSUT()
+        let event = PresenceEvent(kind: .enter, occurredAt: t0)
+
+        try await sut.handleCandidate(event, validationDate: t0.addingTimeInterval(599))
+
+        XCTAssertTrue(store.savedEvents.isEmpty)
+        XCTAssertTrue(activity.startedArrivals.isEmpty)
+        XCTAssertEqual(activity.endCallCount, 0)
+    }
 
     func testPendingAtExactly600sDoesNotPersistOrTouchActivity() async throws {
         let (sut, store, activity) = makeSUT()

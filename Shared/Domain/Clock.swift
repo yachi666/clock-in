@@ -1,6 +1,6 @@
 import Foundation
 
-protocol Clock {
+protocol Clock: Sendable {
     var now: Date { get }
 }
 
