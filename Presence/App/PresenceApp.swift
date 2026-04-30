@@ -7,9 +7,14 @@ struct PresenceApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Text(appState.hasCompletedSetup ? "Presence Dashboard" : "Presence Setup")
-                .font(.system(size: 28, weight: .semibold, design: .rounded))
-                .environment(appState)
+            if appState.hasCompletedSetup {
+                Text("Presence Dashboard")
+                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                    .environment(appState)
+            } else {
+                SetupView(appState: appState)
+                    .environment(appState)
+            }
         }
         .modelContainer(for: [
             WorkplaceConfigModel.self,
