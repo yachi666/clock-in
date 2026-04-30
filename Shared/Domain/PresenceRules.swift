@@ -10,7 +10,7 @@ struct PresenceRules {
     }
 
     func validate(candidate event: PresenceEvent, at now: Date) -> PresenceValidationResult {
-        now.timeIntervalSince(event.occurredAt) >= debounceInterval ? .validated(event) : .pending
+        now.timeIntervalSince(event.occurredAt) > debounceInterval ? .validated(event) : .pending
     }
 
     func attendanceDayIdentifier(forExitAt date: Date) -> String {
@@ -20,7 +20,7 @@ struct PresenceRules {
     }
 
     func buildAttendanceDay(arrivedAt: Date, leftAt: Date?) -> AttendanceDay {
-        let validLeftAt = leftAt.flatMap { $0 >= arrivedAt ? $0 : nil }
+        let validLeftAt = leftAt.flatMap { $0 > arrivedAt ? $0 : nil }
         let identifier = dayIdentifier(for: arrivedAt, calendar: calendar)
         let duration = validLeftAt.map { $0.timeIntervalSince(arrivedAt) } ?? 0
         return AttendanceDay(

@@ -12,12 +12,22 @@ final class PresenceRulesTests: XCTestCase {
         XCTAssertEqual(result, .pending)
     }
 
-    func testEnterEventIsValidatedAfterTenMinutes() {
+    func testEnterEventIsPendingAtExactlyTenMinutes() {
         let calendar = Calendar(identifier: .gregorian)
         let rules = PresenceRules(calendar: calendar)
         let event = PresenceEvent(kind: .enter, occurredAt: Date(timeIntervalSince1970: 1_000))
 
         let result = rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 10 * 60))
+
+        XCTAssertEqual(result, .pending)
+    }
+
+    func testEnterEventIsValidatedAfterTenMinutes() {
+        let calendar = Calendar(identifier: .gregorian)
+        let rules = PresenceRules(calendar: calendar)
+        let event = PresenceEvent(kind: .enter, occurredAt: Date(timeIntervalSince1970: 1_000))
+
+        let result = rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 10 * 60 + 1))
 
         XCTAssertEqual(result, .validated(event))
     }
@@ -76,7 +86,21 @@ final class PresenceRulesTests: XCTestCase {
         let event = PresenceEvent(kind: .exit, occurredAt: Date(timeIntervalSince1970: 1_000))
 
         XCTAssertEqual(rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 9 * 60 + 59)), .pending)
-        XCTAssertEqual(rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 10 * 60)), .validated(event))
+        XCTAssertEqual(rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 10 * 60)), .pending)
+        XCTAssertEqual(rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 10 * 60 + 1)), .validated(event))
+    }
+
+    func testBuildAttendanceDayWithExitAtArrivalTimeIsPending() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
+        let rules = PresenceRules(calendar: calendar)
+        let arrivedAt = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 5, day: 1, hour: 9, minute: 12)))
+
+        let day = rules.buildAttendanceDay(arrivedAt: arrivedAt, leftAt: arrivedAt)
+
+        XCTAssertNil(day.leftAt)
+        XCTAssertEqual(day.status, .pending)
+        XCTAssertEqual(day.totalDuration, 0)
     }
 
     func testBuildAttendanceDayFromValidatedEnterAndExit() throws {
