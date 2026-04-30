@@ -64,8 +64,9 @@ final class DashboardLoadCoordinatorTests: XCTestCase {
         let coordinator = makeCoordinator(context: context)
         let result = await coordinator.load(monthIdentifier: "2026-05")
 
-        if case .loaded(let summary, _) = result {
+        if case .loaded(let summary, _, let holidayCalendar) = result {
             XCTAssertEqual(summary.monthIdentifier, "2026-05")
+            XCTAssertEqual(holidayCalendar.entries.first?.name, "劳动节")
             // 2026-05: 31 days, May 1 is holiday, weekend days = 4*2=8 → 31-8-1=22
             XCTAssertGreaterThan(summary.workingDays, 0)
         } else {
@@ -81,7 +82,7 @@ final class DashboardLoadCoordinatorTests: XCTestCase {
         let result = await coordinator.load(monthIdentifier: "2026-05")
 
         // Result should be loaded.
-        if case .loaded(let summary, _) = result {
+        if case .loaded(let summary, _, _) = result {
             XCTAssertEqual(summary.monthIdentifier, "2026-05")
         } else {
             XCTFail("Expected .loaded but got \(result)")
@@ -154,7 +155,7 @@ final class DashboardLoadCoordinatorTests: XCTestCase {
         )
         let result = await coordinator.load(monthIdentifier: "2026-05")
 
-        if case .loaded(let summary, let days) = result {
+        if case .loaded(let summary, let days, _) = result {
             XCTAssertEqual(summary.presentDays, 1)
             XCTAssertEqual(days.count, 1)
             XCTAssertEqual(days.first?.dayIdentifier, "2026-05-06")
@@ -186,7 +187,7 @@ final class DashboardLoadCoordinatorTests: XCTestCase {
         let result = await coordinator.load(monthIdentifier: "2026-05")
 
         // Store failure falls back to empty day list; holiday cache still available → .loaded.
-        if case .loaded(let summary, let days) = result {
+        if case .loaded(let summary, let days, _) = result {
             XCTAssertEqual(summary.presentDays, 0)
             XCTAssertTrue(days.isEmpty)
         } else {

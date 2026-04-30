@@ -47,4 +47,52 @@ final class AppStateTests: XCTestCase {
             radiusMeters: 500
         ))
     }
+
+    func testReopenSetupKeepsDraftButShowsSetupFlow() {
+        let sut = AppState()
+        sut.completeSetup(latitude: 31.2304, longitude: 121.4737, radiusMeters: 100)
+
+        sut.reopenSetup()
+
+        XCTAssertFalse(sut.hasCompletedSetup)
+        XCTAssertEqual(sut.workplaceDraft, WorkplaceDraft(
+            latitude: 31.2304,
+            longitude: 121.4737,
+            radiusMeters: 100
+        ))
+    }
+
+    func testRootSetupLoadGateAllowsOnlyInitialLoad() {
+        var gate = RootSetupLoadGate()
+
+        XCTAssertTrue(gate.shouldLoadPersistedSetup())
+        XCTAssertFalse(gate.shouldLoadPersistedSetup())
+    }
+
+    func testWorkplaceSetupDefaultRadiusIs200Meters() {
+        XCTAssertEqual(WorkplaceSetupDefaults.defaultRadiusMeters, 200)
+    }
+
+    func testRootTrackingStartPolicyUpdatesEvenWhenMonitorAlreadyExists() {
+        XCTAssertTrue(RootTrackingStartPolicy.shouldStartTracking(
+            setupCompleted: true,
+            hasWorkplaceDraft: true,
+            hasExistingMonitor: true
+        ))
+        XCTAssertTrue(RootTrackingStartPolicy.shouldStartTracking(
+            setupCompleted: true,
+            hasWorkplaceDraft: true,
+            hasExistingMonitor: false
+        ))
+        XCTAssertFalse(RootTrackingStartPolicy.shouldStartTracking(
+            setupCompleted: false,
+            hasWorkplaceDraft: true,
+            hasExistingMonitor: true
+        ))
+        XCTAssertFalse(RootTrackingStartPolicy.shouldStartTracking(
+            setupCompleted: true,
+            hasWorkplaceDraft: false,
+            hasExistingMonitor: true
+        ))
+    }
 }

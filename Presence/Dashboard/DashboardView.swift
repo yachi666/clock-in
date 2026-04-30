@@ -1,304 +1,512 @@
 import SwiftUI
+import UIKit
 
 struct DashboardView: View {
     let summary: MonthlySummary
     let attendanceDays: [AttendanceDay]
+    var holidayCalendar: HolidayCalendar?
     var workingDaysUnavailable: Bool = false
+    var onPreviousMonth: (() -> Void)?
+    var onNextMonth: (() -> Void)?
+    var onSetupTapped: (() -> Void)?
 
-    @State private var selectedDay: AttendanceDay? = nil
+    @State private var selectedDay: DashboardCalendarDay?
+    @State private var selectedDayFrame: CGRect?
+    @State private var dayGridFrame: CGRect = .zero
+    @State private var isSelectingDay = false
+    @AppStorage("dashboardGestureHintSeen") private var hasSeenGestureHint = false
 
-    private var attendanceMap: [String: AttendanceDay] {
-        Dictionary(uniqueKeysWithValues: attendanceDays.map { ($0.dayIdentifier, $0) })
+    private var calendarDays: [DashboardCalendarDay] {
+        DashboardCalendarLayout.build(
+            monthIdentifier: summary.monthIdentifier,
+            attendanceDays: attendanceDays,
+            holidayCalendar: holidayCalendar
+        )
     }
 
     private var progress: Double {
-        guard summary.workingDays > 0 else { return 0 }
-        return Double(summary.presentDays) / Double(summary.workingDays)
+        guard !workingDaysUnavailable, summary.workingDays > 0 else { return 0 }
+        return min(1, Double(summary.presentDays) / Double(summary.workingDays))
     }
 
-    private static let monthTitleFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "MMMM yyyy"
-        f.locale = Locale.current
-        return f
-    }()
-
-    private var monthTitle: String {
-        let parts = summary.monthIdentifier.split(separator: "-")
-        guard parts.count == 2, let year = Int(parts[0]), let month = Int(parts[1]) else {
-            return summary.monthIdentifier
-        }
-        var components = DateComponents()
-        components.year = year
-        components.month = month
-        components.day = 1
-        let calendar = Calendar.gregorianCN
-        guard let date = calendar.date(from: components) else { return summary.monthIdentifier }
-        return Self.monthTitleFormatter.string(from: date)
-    }
-
-    private var calendarDays: [CalendarDay] {
-        let parts = summary.monthIdentifier.split(separator: "-")
-        guard parts.count == 2,
-              let year = Int(parts[0]),
-              let month = Int(parts[1])
-        else { return [] }
-
-        var firstComponents = DateComponents()
-        firstComponents.year = year
-        firstComponents.month = month
-        firstComponents.day = 1
-        let cal = Calendar.gregorianCN
-        guard let firstDay = cal.date(from: firstComponents),
-              let dayRange = cal.range(of: .day, in: .month, for: firstDay)
-        else { return [] }
-
-        // weekday of first day (1=Sun ... 7=Sat), convert to Mon-origin (0=Mon)
-        let rawWeekday = cal.component(.weekday, from: firstDay)
-        let leadingBlanks = (rawWeekday + 5) % 7
-
-        var days: [CalendarDay] = Array(repeating: .blank, count: leadingBlanks)
-        for day in dayRange {
-            let identifier = String(format: "%04d-%02d-%02d", year, month, day)
-            let attendance = attendanceMap[identifier]
-            days.append(CalendarDay(dayNumber: day, identifier: identifier, attendance: attendance))
-        }
-        return days
+    private var monthParts: (month: String, year: String) {
+        DashboardMonthTitleParts.parts(from: summary.monthIdentifier)
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    summaryCard
-                    monthGridSection
+        GeometryReader { rootProxy in
+            ZStack(alignment: .top) {
+                Color.white
+                    .ignoresSafeArea()
+                    .onTapGesture { clearSelectedDay() }
+
+                VStack(spacing: 0) {
+                    header
+                    calendarGrid
+                    if DashboardGestureHint.shouldShow(hasSeenHint: hasSeenGestureHint) {
+                        gestureHint
+                            .padding(.top, 22)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                    Spacer(minLength: 24)
+                    footer
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 32)
+                .padding(.top, 56)
+                .padding(.bottom, 48)
+                .frame(maxWidth: 540)
+                .frame(maxWidth: .infinity)
+
+                if let selectedDay,
+                   selectedDay.isCurrentMonth,
+                   let selectedDayFrame {
+                    let anchorFrame = selectedDayFrame.offsetBy(dx: dayGridFrame.minX, dy: dayGridFrame.minY)
+                    let popoverSize = Self.popoverSize(for: selectedDay)
+                    DayTimePopover(day: selectedDay)
+                        .frame(width: popoverSize.width, height: popoverSize.height, alignment: .leading)
+                        .position(
+                            DashboardPopoverPositioner.position(
+                                anchoredTo: anchorFrame,
+                                popoverSize: popoverSize,
+                                containerSize: rootProxy.size
+                            )
+                        )
+                        .transition(
+                            .opacity
+                                .combined(with: .scale(scale: 0.94, anchor: .center))
+                        )
+                        .zIndex(2)
+                }
+
+                Button {
+                    onSetupTapped?()
+                } label: {
+                    Text("Setup")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(Color.figmaMutedText)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 32)
+                .padding(.trailing, 32)
+                .frame(maxWidth: .infinity, alignment: .topTrailing)
             }
-            .navigationTitle(monthTitle)
-            .navigationBarTitleDisplayMode(.large)
-            .overlay {
-                if let day = selectedDay {
-                    DayDetailOverlay(day: day) {
-                        selectedDay = nil
+            .coordinateSpace(name: Self.dashboardCoordinateSpace)
+        }
+        .fontDesign(.default)
+        .simultaneousGesture(monthSwipeGesture)
+        .onPreferenceChange(DashboardDayGridFramePreferenceKey.self) { dayGridFrame = $0 }
+        .animation(.easeOut(duration: 0.2), value: selectedDay?.id)
+    }
+
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(monthParts.month)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(.black)
+            Text(monthParts.year)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(Color.figmaMutedText)
+        }
+        .padding(.bottom, 48)
+    }
+
+    private var calendarGrid: some View {
+        VStack(spacing: 28) {
+            HStack(spacing: 8) {
+                ForEach(Array(Self.weekdayLabels.enumerated()), id: \.offset) { _, label in
+                    Text(label)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(Color.figmaMutedText)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            GeometryReader { proxy in
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7), spacing: 28) {
+                    ForEach(calendarDays, id: \.id) { day in
+                        FigmaDayCell(day: day, isSelected: selectedDay?.id == day.id)
+                    }
+                }
+                .contentShape(Rectangle())
+                .gesture(daySelectionGesture(in: proxy.size))
+                .background {
+                    GeometryReader { gridProxy in
+                        Color.clear.preference(
+                            key: DashboardDayGridFramePreferenceKey.self,
+                            value: gridProxy.frame(in: .named(Self.dashboardCoordinateSpace))
+                        )
                     }
                 }
             }
-        }
-    }
-
-    private var summaryCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Present Days")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(summary.presentDays)")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                }
-                Spacer()
-                if workingDaysUnavailable {
-                    Text("Working day data unavailable")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.trailing)
-                } else {
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("Working Days")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text("\(summary.workingDays)")
-                            .font(.system(size: 34, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-
-            if !workingDaysUnavailable {
-                ProgressView(value: progress)
-                    .tint(.green)
-                    .scaleEffect(x: 1, y: 2, anchor: .center)
-
-                Text("\(Int(progress * 100))% attendance rate")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-    }
-
-    private var monthGridSection: some View {
-        VStack(spacing: 8) {
-            weekdayHeader
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                ForEach(Array(calendarDays.enumerated()), id: \.offset) { _, day in
-                    DayCell(day: day)
-                        .onTapGesture {
-                            if let attendance = day.attendance {
-                                selectedDay = attendance
-                            }
-                        }
-                }
-            }
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-    }
-
-    private static let weekdayLabels = ["M", "T", "W", "T", "F", "S", "S"]
-
-    private var weekdayHeader: some View {
-        HStack(spacing: 0) {
-            ForEach(Array(Self.weekdayLabels.enumerated()), id: \.offset) { _, label in
-                Text(label)
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-            }
-        }
-    }
-}
-
-// MARK: - Supporting Types
-
-struct CalendarDay {
-    let dayNumber: Int?
-    let identifier: String?
-    let attendance: AttendanceDay?
-
-    static let blank = CalendarDay(dayNumber: nil, identifier: nil, attendance: nil)
-
-    init(dayNumber: Int? = nil, identifier: String? = nil, attendance: AttendanceDay? = nil) {
-        self.dayNumber = dayNumber
-        self.identifier = identifier
-        self.attendance = attendance
-    }
-}
-
-// MARK: - Day Cell
-
-private struct DayCell: View {
-    let day: CalendarDay
-
-    var body: some View {
-        Group {
-            if let number = day.dayNumber {
-                ZStack {
-                    Circle()
-                        .fill(backgroundColor)
-                        .frame(width: 36, height: 36)
-                    Text("\(number)")
-                        .font(.system(.footnote, design: .rounded))
-                        .fontWeight(fontWeight)
-                        .foregroundStyle(foregroundColor)
-                }
-            } else {
-                Color.clear
-                    .frame(width: 36, height: 36)
-            }
+            .frame(height: dayGridHeight)
         }
         .frame(maxWidth: .infinity)
     }
 
-    private var backgroundColor: Color {
-        switch day.attendance?.status {
-        case .present: return .green.opacity(0.8)
-        case .absent:  return .red.opacity(0.15)
-        case .pending: return .orange.opacity(0.3)
-        case nil:      return .clear
+    private var gestureHint: some View {
+        Text(DashboardGestureHint.text)
+            .font(.system(size: 12, weight: .regular))
+            .foregroundStyle(Color.figmaSecondaryText)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color.figmaPopover, in: Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(Color.figmaBorder, lineWidth: 1)
+            }
+    }
+
+    private var dayGridHeight: CGFloat {
+        let rowHeight: CGFloat = 34
+        let rowSpacing: CGFloat = 28
+        let rows = max(1, Int(ceil(Double(calendarDays.count) / 7.0)))
+        return CGFloat(rows) * rowHeight + CGFloat(rows - 1) * rowSpacing
+    }
+
+    private func daySelectionGesture(in size: CGSize) -> some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .local)
+            .onChanged { value in
+                isSelectingDay = true
+                selectDay(at: value.location, in: size)
+            }
+            .onEnded { _ in
+                clearSelectedDay()
+                DispatchQueue.main.async {
+                    isSelectingDay = false
+                }
+            }
+    }
+
+    private func selectDay(at point: CGPoint, in size: CGSize) {
+        guard let day = DashboardCalendarHitTester.day(at: point, in: size, days: calendarDays),
+              day.isCurrentMonth,
+              let dayFrame = DashboardCalendarHitTester.frame(for: day.id, in: size, days: calendarDays)
+        else { return }
+
+        guard selectedDay?.id != day.id else { return }
+        markGestureHintSeen()
+        if selectedDay != nil {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+        selectedDay = day
+        selectedDayFrame = dayFrame
+    }
+
+    private var monthSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 40)
+            .onEnded { value in
+                guard !isSelectingDay,
+                      let change = DashboardMonthSwipeResolver.change(for: value.translation)
+                else { return }
+
+                clearSelectedDay()
+                markGestureHintSeen()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                switch change {
+                case .previous:
+                    onPreviousMonth?()
+                case .next:
+                    onNextMonth?()
+                }
+            }
+    }
+
+    private func clearSelectedDay() {
+        selectedDay = nil
+        selectedDayFrame = nil
+    }
+
+    private func markGestureHintSeen() {
+        if !hasSeenGestureHint {
+            hasSeenGestureHint = true
         }
     }
 
-    private var foregroundColor: Color {
-        day.attendance?.status == .present ? .white : .primary
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("\(summary.presentDays)")
+                    .font(.system(size: 34, weight: .medium))
+                    .foregroundStyle(.black)
+                Text("days present")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(Color.figmaSecondaryText)
+            }
+
+            Text(workingDaysUnavailable ? "Working day data unavailable" : "Out of \(summary.workingDays) working days this month")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(Color.figmaMutedText)
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.figmaRule)
+                    Rectangle()
+                        .fill(Color.figmaProgress)
+                        .frame(width: proxy.size.width * progress)
+                }
+            }
+            .frame(height: 1)
+            .padding(.top, 14)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var fontWeight: Font.Weight {
-        day.attendance != nil ? .semibold : .regular
+    private static let weekdayLabels = ["S", "M", "T", "W", "T", "F", "S"]
+    private static let dashboardCoordinateSpace = "DashboardCoordinateSpace"
+
+    // Popover height is content-derived:
+    //   Base card (pill + date row): 96 pt
+    //   + Holiday text row:          +20 pt → 116 pt
+    //   + Attendance block:          +48 pt → 144 pt
+    //   + Both present:              +68 pt → 164 pt
+    static func popoverSize(for day: DashboardCalendarDay) -> CGSize {
+        switch (day.attendance != nil, day.holiday != nil) {
+        case (true, true):
+            return CGSize(width: 224, height: 164)
+        case (true, false):
+            return CGSize(width: 224, height: 144)
+        case (false, true):
+            return CGSize(width: 224, height: 116)
+        case (false, false):
+            return CGSize(width: 224, height: 96)
+        }
     }
 }
 
-// MARK: - Day Detail Overlay
+private struct DashboardDayGridFramePreferenceKey: PreferenceKey {
+    static let defaultValue: CGRect = .zero
 
-private struct DayDetailOverlay: View {
-    let day: AttendanceDay
-    let onDismiss: () -> Void
-
-    private var durationString: String {
-        guard day.totalDuration > 0 else { return "—" }
-        let hours = Int(day.totalDuration) / 3600
-        let minutes = (Int(day.totalDuration) % 3600) / 60
-        return "\(hours)h \(minutes)m"
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
     }
+}
 
-    private static let timeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .none
-        f.timeStyle = .short
-        return f
-    }()
+private struct FigmaDayCell: View {
+    let day: DashboardCalendarDay
+    let isSelected: Bool
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.35)
-                .ignoresSafeArea()
-                .onTapGesture(perform: onDismiss)
-
-            VStack(spacing: 16) {
-                HStack {
-                    Text(day.dayIdentifier)
-                        .font(.headline)
-                    Spacer()
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
+        VStack(spacing: 8) {
+            Text("\(day.date)")
+                .font(.system(size: 14, weight: dateWeight))
+                .foregroundStyle(dateColor)
+                .frame(width: 28, height: 22)
+                .overlay {
+                    if day.isToday {
+                        Capsule()
+                            .stroke(Color.figmaProgress.opacity(0.26), lineWidth: 1)
                     }
                 }
 
-                Divider()
+            ZStack {
+                holidayBadge
 
-                detailRow("Status", value: day.status.rawValue.capitalized)
-
-                if let arrived = day.arrivedAt {
-                    detailRow("Arrived", value: Self.timeFormatter.string(from: arrived))
+                switch day.status {
+                case .present:
+                    Circle()
+                        .fill(Color.figmaIndigo)
+                        .frame(width: isSelected ? 8 : 6, height: isSelected ? 8 : 6)
+                case .future:
+                    Circle()
+                        .fill(Color.figmaFutureDot)
+                        .frame(width: 4, height: 4)
+                case .incomplete:
+                    Circle()
+                        .stroke(Color.figmaIncompleteDot, lineWidth: 1)
+                        .frame(width: 7, height: 7)
+                case .empty:
+                    Color.clear
                 }
-                if let left = day.leftAt {
-                    detailRow("Left", value: Self.timeFormatter.string(from: left))
-                }
-                detailRow("Duration", value: durationString)
             }
-            .padding(24)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
-            .padding(.horizontal, 32)
+            .frame(width: 8, height: 8)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 34)
+        .contentShape(Rectangle())
+    }
+
+    private var dateWeight: Font.Weight {
+        day.status == .present || day.status == .incomplete ? .medium : .regular
+    }
+
+    private var dateColor: Color {
+        if !day.isCurrentMonth {
+            return Color.figmaOutOfMonthText
+        }
+        switch day.status {
+        case .present, .incomplete:
+            return .black
+        case .future:
+            return Color.figmaMutedText
+        case .empty:
+            return Color.figmaSecondaryText
         }
     }
 
-    private func detailRow(_ label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(value)
-                .fontWeight(.medium)
+    @ViewBuilder
+    private var holidayBadge: some View {
+        if let holiday = day.holiday {
+            Text(holiday.type == .transferWorkday ? "班" : "休")
+                .font(.system(size: 8, weight: .medium))
+                .foregroundStyle(holiday.type == .transferWorkday ? Color.figmaSecondaryText : Color.figmaHolidayText)
+                .offset(x: 14, y: -22)
         }
-        .font(.subheadline)
     }
 }
 
-// MARK: - Sample Data
+private struct DayTimePopover: View {
+    let day: DashboardCalendarDay
 
-private let sampleAttendanceDays: [AttendanceDay] = (1...15).map { day in
-    AttendanceDay(
-        dayIdentifier: String(format: "2026-04-%02d", day),
-        arrivedAt: Date(timeIntervalSince1970: 1_743_462_000 + Double(day - 1) * 86400),
-        leftAt:    Date(timeIntervalSince1970: 1_743_462_000 + Double(day - 1) * 86400 + 32400),
-        totalDuration: 32400,
-        status: .present
-    )
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    private static let shortMonthSymbols: [String] = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter.shortMonthSymbols
+    }()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            statusPill
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(displayDate)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.black)
+
+                if let holiday = day.holiday {
+                    Text(holidayText(holiday))
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(holiday.type == .transferWorkday ? Color.figmaSecondaryText : Color.figmaHolidayText)
+                        .lineLimit(1)
+                }
+            }
+
+            if let attendance = day.attendance {
+                VStack(spacing: 7) {
+                    timeRow("Arrived", value: formatted(attendance.arrivedAt))
+                    timeRow("Left", value: formatted(attendance.leftAt))
+                }
+                .padding(.top, 2)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(Color.white.opacity(0.68), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.white.opacity(0.72), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
+        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+        .allowsHitTesting(false)
+    }
+
+    private var statusPill: some View {
+        let status = DashboardPopoverStatus.status(for: day)
+        return HStack(spacing: 6) {
+            Circle()
+                .fill(status.tint)
+                .frame(width: 5, height: 5)
+            Text(status.label)
+                .font(.system(size: 11, weight: .medium))
+        }
+        .foregroundStyle(status.tint)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(status.background, in: Capsule())
+    }
+
+    private var displayDate: String {
+        guard let identifier = day.identifier else { return "\(day.date)" }
+        let parts = identifier.split(separator: "-")
+        guard parts.count == 3,
+              let month = Int(parts[1]),
+              (1...Self.shortMonthSymbols.count).contains(month)
+        else { return identifier }
+        return "\(Self.shortMonthSymbols[month - 1]) \(day.date)"
+    }
+
+    private func timeRow(_ label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundStyle(Color.figmaMutedText)
+            Spacer(minLength: 20)
+            Text(value)
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundStyle(value == "--:--" ? Color.figmaMutedText : .black)
+        }
+        .font(.system(size: 13, weight: .regular))
+    }
+
+    private func formatted(_ date: Date?) -> String {
+        guard let date else { return "--:--" }
+        return Self.timeFormatter.string(from: date)
+    }
+
+    private func holidayText(_ holiday: HolidayEntry) -> String {
+        switch holiday.type {
+        case .publicHoliday:
+            return "\(holiday.name) · Holiday"
+        case .transferWorkday:
+            return "\(holiday.name) · Workday"
+        case .unknown:
+            return holiday.name
+        }
+    }
+}
+
+private extension DashboardPopoverStatus {
+    var tint: Color {
+        switch self {
+        case .present:
+            return Color.figmaIndigo
+        case .pending:
+            return Color.figmaIncompleteDot
+        case .holiday:
+            return Color.figmaHolidayText
+        case .future:
+            return Color.figmaMutedText
+        case .noRecord:
+            return Color.figmaSecondaryText
+        }
+    }
+
+    var background: Color {
+        switch self {
+        case .present:
+            return Color.figmaIndigo.opacity(0.12)
+        case .pending:
+            return Color.figmaIncompleteDot.opacity(0.13)
+        case .holiday:
+            return Color.figmaHolidayText.opacity(0.10)
+        case .future:
+            return Color.figmaFutureDot.opacity(0.70)
+        case .noRecord:
+            return Color.figmaRule.opacity(0.95)
+        }
+    }
+}
+
+private extension Color {
+    static let figmaIndigo = Color(red: 99 / 255, green: 102 / 255, blue: 241 / 255)
+    static let figmaMutedText = Color(red: 156 / 255, green: 163 / 255, blue: 175 / 255)
+    static let figmaSecondaryText = Color(red: 75 / 255, green: 85 / 255, blue: 99 / 255)
+    static let figmaOutOfMonthText = Color(red: 229 / 255, green: 231 / 255, blue: 235 / 255)
+    static let figmaFutureDot = Color(red: 229 / 255, green: 231 / 255, blue: 235 / 255)
+    static let figmaIncompleteDot = Color(red: 156 / 255, green: 163 / 255, blue: 175 / 255)
+    static let figmaRule = Color(red: 243 / 255, green: 244 / 255, blue: 246 / 255)
+    static let figmaProgress = Color(red: 31 / 255, green: 41 / 255, blue: 55 / 255)
+    static let figmaPopover = Color(red: 249 / 255, green: 250 / 255, blue: 251 / 255)
+    static let figmaBorder = Color(red: 229 / 255, green: 231 / 255, blue: 235 / 255)
+    static let figmaHolidayText = Color(red: 220 / 255, green: 38 / 255, blue: 38 / 255)
 }
 
 // Placeholder initializer for display fixtures and unavailable holiday state.
@@ -314,12 +522,19 @@ extension MonthlySummary {
     }
 }
 
-// TODO: Task 9 complete — sample retained for previews only.
 extension MonthlySummary {
     static let sample = MonthlySummary(placeholder: "2026-04", presentDays: 15, workingDays: 22)
 }
 
-// MARK: - Previews
+private let sampleAttendanceDays: [AttendanceDay] = (1...15).map { day in
+    AttendanceDay(
+        dayIdentifier: String(format: "2026-04-%02d", day),
+        arrivedAt: Date(timeIntervalSince1970: 1_743_462_000 + Double(day - 1) * 86_400),
+        leftAt: Date(timeIntervalSince1970: 1_743_462_000 + Double(day - 1) * 86_400 + 32_400),
+        totalDuration: 32_400,
+        status: .present
+    )
+}
 
 #Preview {
     DashboardView(summary: .sample, attendanceDays: sampleAttendanceDays)

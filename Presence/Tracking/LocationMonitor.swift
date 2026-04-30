@@ -6,9 +6,11 @@ import Foundation
 protocol CLLocationManaging: AnyObject {
     var delegate: (any CLLocationManagerDelegate)? { get set }
     var authorizationStatus: CLAuthorizationStatus { get }
+    var monitoredRegions: Set<CLRegion> { get }
     func requestWhenInUseAuthorization()
     func requestAlwaysAuthorization()
     func startMonitoring(for region: CLRegion)
+    func stopMonitoring(for region: CLRegion)
 }
 
 extension CLLocationManager: CLLocationManaging {}
@@ -42,6 +44,7 @@ final class LocationMonitor: NSObject {
     }
 
     func startMonitoring(coordinate: CLLocationCoordinate2D, radius: CLLocationDistance) {
+        stopExistingWorkplaceMonitoring()
         let region = CLCircularRegion(center: coordinate, radius: radius, identifier: "workplace")
         region.notifyOnEntry = true
         region.notifyOnExit = true
@@ -86,6 +89,12 @@ final class LocationMonitor: NSObject {
     // Internal for testability; called by the CLLocationManagerDelegate callback.
     func handleMonitoringFailure(_ error: Error) {
         delegate?.locationMonitorDidFail(with: LocationMonitorError.regionMonitoringFailed(error))
+    }
+
+    private func stopExistingWorkplaceMonitoring() {
+        for region in manager.monitoredRegions where region.identifier == "workplace" {
+            manager.stopMonitoring(for: region)
+        }
     }
 }
 

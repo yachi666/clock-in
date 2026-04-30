@@ -22,5 +22,8 @@ final class AppState {
         workplaceDraft = WorkplaceDraft(latitude: latitude, longitude: longitude, radiusMeters: radiusMeters)
         hasCompletedSetup = true
     }
-}
 
+    func reopenSetup() {
+        hasCompletedSetup = false
+    }
+}

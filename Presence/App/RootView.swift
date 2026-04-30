@@ -11,6 +11,7 @@ struct RootView: View {
 
     @State private var appState = AppState()
     @State private var storeLoadError = false
+    @State private var setupLoadGate = RootSetupLoadGate()
 
     // Held as @State so their lifetimes are tied to this view.
     @State private var trackingSession = TrackingSession()
@@ -42,9 +43,16 @@ struct RootView: View {
                 .environment(appState)
             }
         }
-        .task { await loadPersistedSetup() }
+        .task {
+            guard setupLoadGate.shouldLoadPersistedSetup() else { return }
+            await loadPersistedSetup()
+        }
         .onChange(of: appState.hasCompletedSetup) { _, completed in
-            if completed, trackingSession.locationMonitor == nil, let draft = appState.workplaceDraft {
+            if RootTrackingStartPolicy.shouldStartTracking(
+                setupCompleted: completed,
+                hasWorkplaceDraft: appState.workplaceDraft != nil,
+                hasExistingMonitor: trackingSession.locationMonitor != nil
+            ), let draft = appState.workplaceDraft {
                 startTracking(latitude: draft.latitude, longitude: draft.longitude, radiusMeters: draft.radiusMeters)
             }
         }
@@ -63,7 +71,14 @@ struct RootView: View {
     }
 
     private func startTracking(latitude: Double, longitude: Double, radiusMeters: Double) {
-        guard trackingSession.locationMonitor == nil else { return }
+        if let existingMonitor = trackingSession.locationMonitor {
+            existingMonitor.startMonitoring(
+                coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+                radius: radiusMeters
+            )
+            return
+        }
+
         let store = AttendanceStore(context: modelContext)
         let activityController = PresenceActivityController()
         let coordinator = TrackingCoordinator(store: store, activityController: activityController)
@@ -89,4 +104,24 @@ private final class TrackingSession {
     var locationMonitor: LocationMonitor?
     var coordinator: TrackingCoordinator?
     var bridge: LocationEventBridge?
+}
+
+struct RootSetupLoadGate {
+    private var didAttemptLoad = false
+
+    mutating func shouldLoadPersistedSetup() -> Bool {
+        guard !didAttemptLoad else { return false }
+        didAttemptLoad = true
+        return true
+    }
+}
+
+enum RootTrackingStartPolicy {
+    static func shouldStartTracking(
+        setupCompleted: Bool,
+        hasWorkplaceDraft: Bool,
+        hasExistingMonitor: Bool
+    ) -> Bool {
+        setupCompleted && hasWorkplaceDraft
+    }
 }

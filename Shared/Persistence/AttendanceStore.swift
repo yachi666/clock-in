@@ -66,6 +66,10 @@ final class AttendanceStore {
         try context.save()
     }
 
+    func recordCurrentArrival(at date: Date = Date()) throws {
+        try saveValidatedEnter(PresenceEvent(kind: .enter, occurredAt: date))
+    }
+
     func fetchAttendanceDays(inMonth month: Date, calendar: Calendar = .current) throws -> [AttendanceDayModel] {
         guard let interval = calendar.dateInterval(of: .month, for: month) else {
             throw AttendanceStoreError.invalidMonth(month)

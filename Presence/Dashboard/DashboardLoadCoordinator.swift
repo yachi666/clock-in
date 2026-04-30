@@ -16,7 +16,7 @@ extension AttendanceStore: AttendanceDayFetching {}
 // MARK: - Load Result
 
 enum DashboardLoadResult {
-    case loaded(summary: MonthlySummary, days: [AttendanceDay])
+    case loaded(summary: MonthlySummary, days: [AttendanceDay], holidayCalendar: HolidayCalendar)
     case holidayUnavailable(presentDays: Int, days: [AttendanceDay], monthIdentifier: String)
 }
 
@@ -66,7 +66,7 @@ struct DashboardLoadCoordinator {
                         holidayCalendar: cached,
                         calendar: calendar
                     )
-                    return .loaded(summary: summary, days: days)
+                    return .loaded(summary: summary, days: days, holidayCalendar: cached)
                 } catch {
                     logger.error("MonthlySummary construction failed (cached): \(error, privacy: .public)")
                     let presentDays = days.filter { $0.status == .present }.count
@@ -92,7 +92,7 @@ struct DashboardLoadCoordinator {
                     holidayCalendar: fetched,
                     calendar: calendar
                 )
-                return .loaded(summary: summary, days: days)
+                return .loaded(summary: summary, days: days, holidayCalendar: fetched)
             } catch {
                 logger.error("MonthlySummary construction failed (fetched): \(error, privacy: .public)")
                 let presentDays = days.filter { $0.status == .present }.count

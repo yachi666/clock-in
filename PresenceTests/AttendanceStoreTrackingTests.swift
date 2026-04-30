@@ -60,6 +60,20 @@ final class AttendanceStoreTrackingTests: XCTestCase {
         XCTAssertEqual(day.statusRawValue, AttendanceStatus.pending.rawValue)
     }
 
+    func testRecordCurrentArrivalCreatesPendingAttendanceDayImmediatelyAfterSetup() throws {
+        let arrivedAt = try date(2026, 5, 1, hour: 9, minute: 12)
+
+        try store.recordCurrentArrival(at: arrivedAt)
+
+        let days = try fetchDays(inMonth: try date(2026, 5, 1))
+        XCTAssertEqual(days.count, 1)
+        let day = try XCTUnwrap(days.first)
+        XCTAssertEqual(day.dayIdentifier, "2026-05-01")
+        XCTAssertEqual(day.arrivedAt, arrivedAt)
+        XCTAssertNil(day.leftAt)
+        XCTAssertEqual(day.statusRawValue, AttendanceStatus.pending.rawValue)
+    }
+
     /// A validated enter followed by a validated exit must produce a present AttendanceDay
     /// with correct arrivedAt, leftAt, and duration.
     func testValidatedEnterThenExitCreatesPresentAttendanceDay() async throws {

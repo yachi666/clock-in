@@ -15,10 +15,19 @@ final class LocationMonitorTests: XCTestCase {
         var requestWhenInUseCount = 0
         var requestAlwaysCount = 0
         var startedRegions: [CLRegion] = []
+        var stoppedRegions: [CLRegion] = []
+        var monitoredRegions: Set<CLRegion> = []
 
         func requestWhenInUseAuthorization() { requestWhenInUseCount += 1 }
         func requestAlwaysAuthorization() { requestAlwaysCount += 1 }
-        func startMonitoring(for region: CLRegion) { startedRegions.append(region) }
+        func startMonitoring(for region: CLRegion) {
+            startedRegions.append(region)
+            monitoredRegions.insert(region)
+        }
+        func stopMonitoring(for region: CLRegion) {
+            stoppedRegions.append(region)
+            monitoredRegions.remove(region)
+        }
     }
 
     @MainActor
@@ -88,6 +97,22 @@ final class LocationMonitorTests: XCTestCase {
         XCTAssertEqual(region?.identifier, "workplace")
         XCTAssertTrue(region?.notifyOnEntry ?? false)
         XCTAssertTrue(region?.notifyOnExit ?? false)
+    }
+
+    func testStartMonitoringStopsExistingWorkplaceRegionBeforeStartingReplacement() {
+        let (sut, fakeManager, _) = makeSUT(status: .authorizedAlways)
+        let oldRegion = CLCircularRegion(center: coordinate, radius: radius, identifier: "workplace")
+        fakeManager.monitoredRegions = [oldRegion]
+
+        sut.startMonitoring(
+            coordinate: CLLocationCoordinate2D(latitude: 31.2304, longitude: 121.4737),
+            radius: 200
+        )
+
+        XCTAssertEqual(fakeManager.stoppedRegions.count, 1)
+        XCTAssertEqual((fakeManager.stoppedRegions.first as? CLCircularRegion)?.identifier, "workplace")
+        XCTAssertEqual(fakeManager.startedRegions.count, 1)
+        XCTAssertEqual((fakeManager.startedRegions.first as? CLCircularRegion)?.radius, 200)
     }
 
     // Monitoring failure is forwarded to delegate synchronously via handleMonitoringFailure(_:).
