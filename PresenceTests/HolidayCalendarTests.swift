@@ -123,9 +123,26 @@ final class HolidayCalendarTests: XCTestCase {
         let caches = try context.fetch(FetchDescriptor<HolidayCalendarCacheModel>())
         XCTAssertEqual(caches.count, 1)
         XCTAssertEqual(caches[0].cacheKey, "CN-2026")
+        XCTAssertEqual(caches[0].availability, .fresh)
         XCTAssertEqual(caches[0].cachedAt, Date(timeIntervalSince1970: 2_000))
         XCTAssertTrue(caches[0].payloadJSON.contains("2026-01-04"))
         XCTAssertFalse(caches[0].payloadJSON.contains("2026-01-01"))
+    }
+
+    func testUnknownCachedAvailabilityDefaultsToUnavailable() throws {
+        let model = HolidayCalendarCacheModel(
+            year: 2026,
+            region: "CN",
+            payloadJSON: "{}",
+            sourceName: "holiday-calendar",
+            sourceUpdatedAt: nil,
+            cachedAt: Date(timeIntervalSince1970: 1_000),
+            availability: .fresh
+        )
+
+        model.availabilityRawValue = "future_value"
+
+        XCTAssertEqual(model.availability, .unavailable)
     }
 
     private func makeInMemoryContext() throws -> ModelContext {

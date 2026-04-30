@@ -63,6 +63,11 @@ final class HolidayCalendarCacheModel {
     var cachedAt: Date
     var availabilityRawValue: String
 
+    var availability: HolidayDataAvailability {
+        get { HolidayDataAvailability(rawValue: availabilityRawValue) ?? .unavailable }
+        set { availabilityRawValue = newValue.rawValue }
+    }
+
     init(year: Int, region: String, payloadJSON: String, sourceName: String, sourceUpdatedAt: Date?, cachedAt: Date, availability: HolidayDataAvailability) {
         self.cacheKey = "\(region)-\(year)"
         self.year = year
