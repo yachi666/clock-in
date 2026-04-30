@@ -60,6 +60,7 @@ final class LocationEventBridgeTests: XCTestCase {
         bridge.locationMonitorDidEnterRegion(at: t0)
 
         XCTAssertTrue(store.savedEvents.isEmpty, "Coordinator must not be called synchronously on delegate callback")
+        await bridge.pendingValidationTask?.value
     }
 
     func testExitDelegateDoesNotCallCoordinatorSynchronously() async {
@@ -69,6 +70,7 @@ final class LocationEventBridgeTests: XCTestCase {
         bridge.locationMonitorDidExitRegion(at: t0)
 
         XCTAssertTrue(store.savedEvents.isEmpty, "Coordinator must not be called synchronously on delegate callback")
+        await bridge.pendingValidationTask?.value
     }
 
     // MARK: - Enter event persisted after debounce

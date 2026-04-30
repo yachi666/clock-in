@@ -16,8 +16,8 @@ final class LocationEventBridge: LocationMonitorDelegate {
     private let sleep: (TimeInterval) async throws -> Void
     private let logger = Logger(subsystem: "com.presence.app", category: "Tracking")
 
-    /// The single in-flight validation task. Exposed internally so `@testable` tests
-    /// can `await bridge.pendingValidationTask?.value` for deterministic synchronisation.
+    /// The single in-flight validation task.
+    /// Internal getter is only for `@testable` deterministic synchronisation.
     private(set) var pendingValidationTask: Task<Void, Never>?
 
     init(
@@ -54,6 +54,7 @@ final class LocationEventBridge: LocationMonitorDelegate {
             guard let self else { return }
             do {
                 try await self.sleep(self.debounceInterval)
+                // A newer event can cancel this task after sleep returns but before validation runs.
                 try Task.checkCancellation()
                 try await self.coordinator.handleCandidate(event, validationDate: self.clock.now)
             } catch is CancellationError {
