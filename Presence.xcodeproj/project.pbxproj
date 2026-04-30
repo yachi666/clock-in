@@ -8,9 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
+		0E59D164B452E35ECC367972 /* PresenceEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCBE7DA86C5DD3C379C6C4 /* PresenceEvent.swift */; };
 		42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACECB606D5B3294C47680676 /* AppState.swift */; };
+		5B5C00C89CC2E9F3782847EB /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61384EA1B1EA84482A6C6F7 /* Clock.swift */; };
+		60EE97A3B10707A4DAF5153F /* PresenceRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */; };
 		7F90BF5296EC3F2259A6A8B8 /* PresenceWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9357E4DC89D047FD6BEBD93F /* PresenceLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */; };
+		9AC4166D88C65F0D07476834 /* PresenceRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0F7E1D4778F01BE6ABA2E9 /* PresenceRulesTests.swift */; };
 		C208D319E129CD5D4A5B679F /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
 		F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */; };
 /* End PBXBuildFile section */
@@ -52,18 +56,33 @@
 		08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceApp.swift; sourceTree = "<group>"; };
 		13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceActivityAttributes.swift; sourceTree = "<group>"; };
 		355766B72D2B8BD666F42D86 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3C0F7E1D4778F01BE6ABA2E9 /* PresenceRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceRulesTests.swift; sourceTree = "<group>"; };
+		47FCBE7DA86C5DD3C379C6C4 /* PresenceEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceEvent.swift; sourceTree = "<group>"; };
 		71CAF04434E6B48231150EAD /* Presence.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Presence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PresenceWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceLiveActivityWidget.swift; sourceTree = "<group>"; };
 		A5D3FF07465DBB02B4975483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		ACECB606D5B3294C47680676 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		B61384EA1B1EA84482A6C6F7 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
+		CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceRules.swift; sourceTree = "<group>"; };
 		D587EFD2262F16AC122C36B8 /* PresenceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PresenceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		1C0AF83F7A82032E59792DBB /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				B61384EA1B1EA84482A6C6F7 /* Clock.swift */,
+				47FCBE7DA86C5DD3C379C6C4 /* PresenceEvent.swift */,
+				CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
 		2599AD951C5B9DA557193D2D /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				1C0AF83F7A82032E59792DBB /* Domain */,
 				9D7048FA8BF7F53427DDE456 /* LiveActivity */,
 			);
 			path = Shared;
@@ -93,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				355766B72D2B8BD666F42D86 /* Info.plist */,
+				3C0F7E1D4778F01BE6ABA2E9 /* PresenceRulesTests.swift */,
 			);
 			path = PresenceTests;
 			sourceTree = "<group>";
@@ -245,6 +265,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9AC4166D88C65F0D07476834 /* PresenceRulesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,8 +274,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */,
+				5B5C00C89CC2E9F3782847EB /* Clock.swift in Sources */,
 				0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */,
 				F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */,
+				0E59D164B452E35ECC367972 /* PresenceEvent.swift in Sources */,
+				60EE97A3B10707A4DAF5153F /* PresenceRules.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
