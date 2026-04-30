@@ -2,7 +2,7 @@ import Foundation
 
 struct PresenceRules {
     private let debounceInterval: TimeInterval
-    let calendar: Calendar
+    private let calendar: Calendar
 
     init(debounceInterval: TimeInterval = 10 * 60, calendar: Calendar = .current) {
         self.debounceInterval = debounceInterval
@@ -17,6 +17,21 @@ struct PresenceRules {
         let hour = calendar.component(.hour, from: date)
         let attributedDate = (hour < 4 ? calendar.date(byAdding: .day, value: -1, to: date) : nil) ?? date
         return dayIdentifier(for: attributedDate, calendar: calendar)
+    }
+
+    func enterDayIdentifier(for date: Date) -> String {
+        dayIdentifier(for: date, calendar: calendar)
+    }
+
+    func enterSearchStart(forExitAt date: Date) -> Date {
+        let hour = calendar.component(.hour, from: date)
+        let attributedDate = (hour < 4 ? calendar.date(byAdding: .day, value: -1, to: date) : nil) ?? date
+        var components = calendar.dateComponents([.year, .month, .day], from: attributedDate)
+        components.hour = 4
+        components.minute = 0
+        components.second = 0
+        components.nanosecond = 0
+        return calendar.date(from: components) ?? attributedDate
     }
 
     func buildAttendanceDay(arrivedAt: Date, leftAt: Date?) -> AttendanceDay {

@@ -114,4 +114,25 @@ final class AttendanceStoreTrackingTests: XCTestCase {
         XCTAssertEqual(day.arrivedAt, firstEnter, "Earliest arrival must be preserved")
         XCTAssertEqual(day.leftAt, exitTime, "leftAt must not be cleared by a later enter")
     }
+
+    /// An exit with no prior enter in the same attribution window must not create
+    /// a bogus attendance day from a previous day's enter.
+    func testOrphanExitDoesNotPollutePreviousDay() async throws {
+        let may1Enter = try date(2026, 5, 1, hour: 9, minute: 0)
+        let may1Exit = try date(2026, 5, 1, hour: 18, minute: 0)
+        let may2OrphanExit = try date(2026, 5, 2, hour: 15, minute: 0)
+
+        try await store.save(PresenceEvent(kind: .enter, occurredAt: may1Enter))
+        try await store.save(PresenceEvent(kind: .exit, occurredAt: may1Exit))
+        try await store.save(PresenceEvent(kind: .exit, occurredAt: may2OrphanExit))
+
+        let mayDays = try fetchDays(inMonth: try date(2026, 5, 1))
+        XCTAssertEqual(mayDays.count, 1, "Orphan exit must not create a second attendance day")
+        let may1Day = try XCTUnwrap(mayDays.first)
+        XCTAssertEqual(may1Day.dayIdentifier, "2026-05-01")
+        XCTAssertEqual(may1Day.statusRawValue, AttendanceStatus.present.rawValue)
+        XCTAssertEqual(may1Day.arrivedAt, may1Enter)
+        XCTAssertEqual(may1Day.leftAt, may1Exit)
+        XCTAssertEqual(may1Day.totalDuration, 9 * 3600, accuracy: 1)
+    }
 }

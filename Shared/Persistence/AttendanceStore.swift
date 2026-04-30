@@ -97,7 +97,7 @@ extension AttendanceStore: TrackingStore {
     private func saveValidatedEnter(_ event: PresenceEvent) throws {
         context.insert(RegionEventModel(kind: event.kind, occurredAt: event.occurredAt, isValidated: true))
 
-        let id = dayIdentifier(for: event.occurredAt, calendar: rules.calendar)
+        let id = rules.enterDayIdentifier(for: event.occurredAt)
         var descriptor = FetchDescriptor<AttendanceDayModel>(
             predicate: #Predicate { $0.dayIdentifier == id }
         )
@@ -124,12 +124,13 @@ extension AttendanceStore: TrackingStore {
     private func saveValidatedExit(_ event: PresenceEvent) throws {
         context.insert(RegionEventModel(kind: event.kind, occurredAt: event.occurredAt, isValidated: true))
 
-        // Find the latest validated enter at or before this exit.
+        // Find the latest validated enter in this exit's attendance window.
         let exitTime = event.occurredAt
+        let windowStart = rules.enterSearchStart(forExitAt: exitTime)
         let enterKind = PresenceEvent.Kind.enter.rawValue
         var enterDescriptor = FetchDescriptor<RegionEventModel>(
             predicate: #Predicate {
-                $0.kindRawValue == enterKind && $0.isValidated == true && $0.occurredAt <= exitTime
+                $0.kindRawValue == enterKind && $0.isValidated == true && $0.occurredAt >= windowStart && $0.occurredAt <= exitTime
             },
             sortBy: [SortDescriptor(\.occurredAt, order: .reverse)]
         )
