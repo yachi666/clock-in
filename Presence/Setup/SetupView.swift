@@ -23,13 +23,14 @@ struct SetupView: View {
                         mapCenter = context.region.center
                     }
                     .ignoresSafeArea()
+                    .overlay {
+                        // Center crosshair
+                        Image(systemName: "plus")
+                            .font(.title)
+                            .foregroundStyle(.primary)
+                            .shadow(radius: 2)
+                    }
             }
-
-            // Center crosshair
-            Image(systemName: "plus")
-                .font(.title)
-                .foregroundStyle(.primary)
-                .shadow(radius: 2)
 
             bottomCard
         }
