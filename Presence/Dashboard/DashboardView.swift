@@ -15,6 +15,13 @@ struct DashboardView: View {
         return Double(summary.presentDays) / Double(summary.workingDays)
     }
 
+    private static let monthTitleFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMMM yyyy"
+        f.locale = Locale.current
+        return f
+    }()
+
     private var monthTitle: String {
         let parts = summary.monthIdentifier.split(separator: "-")
         guard parts.count == 2, let year = Int(parts[0]), let month = Int(parts[1]) else {
@@ -26,10 +33,7 @@ struct DashboardView: View {
         components.day = 1
         let calendar = Calendar.gregorianCN
         guard let date = calendar.date(from: components) else { return summary.monthIdentifier }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        formatter.locale = Locale.current
-        return formatter.string(from: date)
+        return Self.monthTitleFormatter.string(from: date)
     }
 
     private var calendarDays: [CalendarDay] {
@@ -134,9 +138,11 @@ struct DashboardView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
+    private static let weekdayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+
     private var weekdayHeader: some View {
         HStack(spacing: 0) {
-            ForEach(["M", "T", "W", "T", "F", "S", "S"], id: \.self) { label in
+            ForEach(Array(Self.weekdayLabels.enumerated()), id: \.offset) { _, label in
                 Text(label)
                     .font(.caption2)
                     .fontWeight(.semibold)
@@ -285,16 +291,17 @@ private let sampleAttendanceDays: [AttendanceDay] = (1...15).map { day in
     )
 }
 
+// Placeholder initializer for display fixtures — bypasses holiday calendar computation.
+private extension MonthlySummary {
+    init(placeholder monthIdentifier: String, presentDays: Int, workingDays: Int) {
+        self.monthIdentifier = monthIdentifier
+        self.presentDays = presentDays
+        self.workingDays = workingDays
+    }
+}
+
 extension MonthlySummary {
-    static let sample: MonthlySummary = {
-        let hc = HolidayCalendar(year: 2026, region: "CN", entries: [])
-        // swiftlint:disable:next force_try
-        return try! MonthlySummary(  // safe: known-valid inputs used only for preview
-            monthIdentifier: "2026-04",
-            attendanceDays: sampleAttendanceDays,
-            holidayCalendar: hc
-        )
-    }()
+    static let sample = MonthlySummary(placeholder: "2026-04", presentDays: 15, workingDays: 22)
 }
 
 // MARK: - Previews

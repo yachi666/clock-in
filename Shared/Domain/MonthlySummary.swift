@@ -40,7 +40,7 @@ struct MonthlySummary: Equatable {
         var count = 0
         for day in dayRange {
             let identifier = String(format: "%04d-%02d-%02d", year, month, day)
-            if (try? holidayCalendar.isWorkday(identifier, calendar: calendar)) == true {
+            if try holidayCalendar.isWorkday(identifier, calendar: calendar) {
                 count += 1
             }
         }
