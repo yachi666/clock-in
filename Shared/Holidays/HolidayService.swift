@@ -60,8 +60,10 @@ struct HolidayService {
         }
 
         let calendar = try JSONDecoder().decode(HolidayCalendar.self, from: data)
-        model.availability = .cached
-        try context.save()
+        if model.availability != .cached {
+            model.availability = .cached
+            try context.save()
+        }
         return calendar
     }
 }
