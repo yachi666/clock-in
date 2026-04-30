@@ -44,4 +44,24 @@ struct HolidayService {
 
         try context.save()
     }
+
+    @MainActor
+    func loadCachedCalendar(year: Int, region: String = "CN", in context: ModelContext) throws -> HolidayCalendar? {
+        let cacheKey = "\(region)-\(year)"
+        var descriptor = FetchDescriptor<HolidayCalendarCacheModel>(
+            predicate: #Predicate { $0.cacheKey == cacheKey }
+        )
+        descriptor.fetchLimit = 1
+
+        guard let model = try context.fetch(descriptor).first,
+              model.availability != .unavailable,
+              let data = model.payloadJSON.data(using: .utf8) else {
+            return nil
+        }
+
+        let calendar = try JSONDecoder().decode(HolidayCalendar.self, from: data)
+        model.availability = .cached
+        try context.save()
+        return calendar
+    }
 }

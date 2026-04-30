@@ -145,6 +145,41 @@ final class HolidayCalendarTests: XCTestCase {
         XCTAssertEqual(model.availability, .unavailable)
     }
 
+    func testLoadCachedCalendarReturnsStoredCalendarAndMarksItCached() throws {
+        let context = try makeInMemoryContext()
+        let service = HolidayService()
+        let calendar = HolidayCalendar(
+            year: 2026,
+            region: "CN",
+            entries: [HolidayEntry(date: "2026-01-01", name: "元旦", type: .publicHoliday)]
+        )
+        try service.cache(calendar, in: context, now: Date(timeIntervalSince1970: 1_000))
+
+        let loaded = try service.loadCachedCalendar(year: 2026, region: "CN", in: context)
+
+        XCTAssertEqual(loaded, calendar)
+        let caches = try context.fetch(FetchDescriptor<HolidayCalendarCacheModel>())
+        XCTAssertEqual(caches[0].availability, .cached)
+    }
+
+    func testLoadCachedCalendarReturnsNilForUnavailableCache() throws {
+        let context = try makeInMemoryContext()
+        context.insert(HolidayCalendarCacheModel(
+            year: 2026,
+            region: "CN",
+            payloadJSON: "{}",
+            sourceName: "holiday-calendar",
+            sourceUpdatedAt: nil,
+            cachedAt: Date(timeIntervalSince1970: 1_000),
+            availability: .unavailable
+        ))
+        try context.save()
+
+        let loaded = try HolidayService().loadCachedCalendar(year: 2026, region: "CN", in: context)
+
+        XCTAssertNil(loaded)
+    }
+
     private func makeInMemoryContext() throws -> ModelContext {
         let schema = Schema([
             WorkplaceConfigModel.self,
