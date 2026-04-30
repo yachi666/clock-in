@@ -115,52 +115,24 @@ final class PresenceActivityControllerTests: XCTestCase {
     func testStartPassesElapsedSecondsToContentState() async {
         let arrivedAt = Date(timeIntervalSince1970: 0)
         let now = Date(timeIntervalSince1970: 60)
-        var capturedState: PresenceActivityAttributes.ContentState?
-
-        final class CapturingClient: ActivityRequesting, @unchecked Sendable {
-            var areActivitiesEnabled = true
-            var captured: PresenceActivityAttributes.ContentState?
-            func requestActivity(
-                attributes: PresenceActivityAttributes,
-                contentState: PresenceActivityAttributes.ContentState,
-                staleDate: Date?
-            ) throws -> any ActivityEnding {
-                captured = contentState
-                return FakeHandle(initialState: contentState)
-            }
-        }
-
-        let client = CapturingClient()
+        let client = FakeClient()
         let sut = PresenceActivityController(client: client, clock: FixedClock(now: now))
-        await sut.start(arrivedAt: arrivedAt)
-        capturedState = client.captured
 
-        XCTAssertEqual(capturedState?.arrivedAt, arrivedAt)
-        XCTAssertEqual(capturedState?.elapsedSeconds ?? -1, 60, accuracy: 0.001)
+        await sut.start(arrivedAt: arrivedAt)
+
+        XCTAssertEqual(client.lastCreatedHandle?.initialState.arrivedAt, arrivedAt)
+        XCTAssertEqual(client.lastCreatedHandle?.initialState.elapsedSeconds ?? -1, 60, accuracy: 0.001)
     }
 
     func testStartClampsNegativeElapsedToZero() async {
         let arrivedAt = Date(timeIntervalSince1970: 100)
         let now = Date(timeIntervalSince1970: 50)  // clock is before arrivedAt
-
-        final class CapturingClient: ActivityRequesting, @unchecked Sendable {
-            var areActivitiesEnabled = true
-            var captured: PresenceActivityAttributes.ContentState?
-            func requestActivity(
-                attributes: PresenceActivityAttributes,
-                contentState: PresenceActivityAttributes.ContentState,
-                staleDate: Date?
-            ) throws -> any ActivityEnding {
-                captured = contentState
-                return FakeHandle(initialState: contentState)
-            }
-        }
-
-        let client = CapturingClient()
+        let client = FakeClient()
         let sut = PresenceActivityController(client: client, clock: FixedClock(now: now))
+
         await sut.start(arrivedAt: arrivedAt)
 
-        XCTAssertEqual(client.captured?.elapsedSeconds, 0)
+        XCTAssertEqual(client.lastCreatedHandle?.initialState.elapsedSeconds, 0)
     }
 
     // MARK: - end: no active activity

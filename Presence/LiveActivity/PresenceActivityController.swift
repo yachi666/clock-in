@@ -39,8 +39,8 @@ struct DefaultActivityRequester: ActivityRequesting {
     }
 }
 
-// @unchecked Sendable is safe: the Activity<> value is only ever accessed through
-// the @MainActor `end(contentState:)` method, so no data races can occur.
+// @unchecked Sendable is safe: `activity` is written once during init before the
+// handle is shared, then only read/called from the @MainActor end path.
 private final class ActivityKitHandle: ActivityEnding, @unchecked Sendable {
     private var activity: Activity<PresenceActivityAttributes>
 
