@@ -20,11 +20,17 @@ struct RootView: View {
     var body: some View {
         Group {
             if storeLoadError {
-                ContentUnavailableView(
-                    "Configuration Error",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text("Could not load your saved workplace. Please restart the app.")
-                )
+                ContentUnavailableView {
+                    Label("Configuration Error", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text("Could not load your saved workplace.")
+                } actions: {
+                    Button("Try Again") {
+                        storeLoadError = false
+                        Task { await loadPersistedSetup() }
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
             } else if appState.hasCompletedSetup {
                 DashboardLoader()
                     .environment(appState)

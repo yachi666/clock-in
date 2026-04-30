@@ -51,11 +51,6 @@ final class LocationEventBridgeTests: XCTestCase {
         )
     }
 
-    /// Yields enough times to let the bridge's internal Task (sleep → handleCandidate → store/activity) finish.
-    private func drainMainActor() async {
-        for _ in 0..<8 { await Task.yield() }
-    }
-
     // MARK: - Synchrony guard
 
     func testEnterDelegateDoesNotCallCoordinatorSynchronously() async {
@@ -84,7 +79,7 @@ final class LocationEventBridgeTests: XCTestCase {
         let bridge = makeBridge(store: store, activity: activity, clock: clockPastDebounce)
 
         bridge.locationMonitorDidEnterRegion(at: t0)
-        await drainMainActor()
+        await bridge.pendingValidationTask?.value
 
         XCTAssertEqual(store.savedEvents, [PresenceEvent(kind: .enter, occurredAt: t0)])
         XCTAssertEqual(activity.startedArrivals, [t0])
@@ -99,7 +94,7 @@ final class LocationEventBridgeTests: XCTestCase {
         let bridge = makeBridge(store: store, activity: activity, clock: clockPastDebounce)
 
         bridge.locationMonitorDidExitRegion(at: t0)
-        await drainMainActor()
+        await bridge.pendingValidationTask?.value
 
         XCTAssertEqual(store.savedEvents, [PresenceEvent(kind: .exit, occurredAt: t0)])
         XCTAssertEqual(activity.endCallCount, 1)
@@ -115,8 +110,56 @@ final class LocationEventBridgeTests: XCTestCase {
         let bridge = makeBridge(store: store, activity: SpyActivity(), clock: clock)
 
         bridge.locationMonitorDidEnterRegion(at: t0)
-        await drainMainActor()
+        await bridge.pendingValidationTask?.value
 
         XCTAssertTrue(store.savedEvents.isEmpty, "Event at exactly 600 s must remain pending")
+    }
+
+    // MARK: - Superseding events
+
+    /// enter then exit before the pending task runs: only the exit event must be persisted.
+    func testExitSupersedingEnterPersistsOnlyExit() async {
+        let store = SpyStore()
+        let activity = SpyActivity()
+        // Clock must be > 600 s ahead of the *latest* event (tExit = t0+5), so use t0+700.
+        let clock = FakeClock(now: t0.addingTimeInterval(700))
+        let bridge = makeBridge(store: store, activity: activity, clock: clock)
+
+        let tEnter = t0
+        let tExit = t0.addingTimeInterval(5)
+
+        bridge.locationMonitorDidEnterRegion(at: tEnter)
+        // Supersede with exit before the pending task runs.
+        bridge.locationMonitorDidExitRegion(at: tExit)
+        await bridge.pendingValidationTask?.value
+
+        XCTAssertEqual(store.savedEvents, [PresenceEvent(kind: .exit, occurredAt: tExit)],
+                       "Only the superseding exit event must be persisted")
+        XCTAssertTrue(activity.startedArrivals.isEmpty,
+                      "Enter activity must not start when enter task was cancelled")
+        XCTAssertEqual(activity.endCallCount, 1)
+    }
+
+    /// enter → exit → re-enter: only the last enter is persisted.
+    func testReenterAfterExitPersistsOnlyLatestEnter() async {
+        let store = SpyStore()
+        let activity = SpyActivity()
+        // Clock must be > 600 s ahead of the *latest* event (tEnter1 = t0+10), so use t0+700.
+        let clock = FakeClock(now: t0.addingTimeInterval(700))
+        let bridge = makeBridge(store: store, activity: activity, clock: clock)
+
+        let tEnter0 = t0
+        let tExit = t0.addingTimeInterval(5)
+        let tEnter1 = t0.addingTimeInterval(10)
+
+        bridge.locationMonitorDidEnterRegion(at: tEnter0)
+        bridge.locationMonitorDidExitRegion(at: tExit)
+        bridge.locationMonitorDidEnterRegion(at: tEnter1)
+        await bridge.pendingValidationTask?.value
+
+        XCTAssertEqual(store.savedEvents, [PresenceEvent(kind: .enter, occurredAt: tEnter1)],
+                       "Only the last enter event must be persisted after two supersessions")
+        XCTAssertEqual(activity.startedArrivals, [tEnter1])
+        XCTAssertEqual(activity.endCallCount, 0)
     }
 }

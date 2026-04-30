@@ -3,9 +3,10 @@ import OSLog
 
 /// Bridges LocationMonitor delegate events into TrackingCoordinator.
 ///
-/// On each region transition, a Task is scheduled that sleeps for `debounceInterval`
-/// seconds (> 600 s by default to satisfy PresenceRules' strict > 10-minute window)
-/// before forwarding the event to the coordinator. The `sleep` dependency is
+/// Each region transition cancels any previous pending validation task and schedules
+/// a new one that sleeps for `debounceInterval` seconds (> 600 s by default to satisfy
+/// PresenceRules' strict > 10-minute window) before forwarding the event to the
+/// coordinator. Only the most-recent event is ever persisted. The `sleep` dependency is
 /// injectable so tests can replace it with a no-op and advance a fake clock.
 @MainActor
 final class LocationEventBridge: LocationMonitorDelegate {
@@ -14,6 +15,10 @@ final class LocationEventBridge: LocationMonitorDelegate {
     private let debounceInterval: TimeInterval
     private let sleep: (TimeInterval) async throws -> Void
     private let logger = Logger(subsystem: "com.presence.app", category: "Tracking")
+
+    /// The single in-flight validation task. Exposed internally so `@testable` tests
+    /// can `await bridge.pendingValidationTask?.value` for deterministic synchronisation.
+    private(set) var pendingValidationTask: Task<Void, Never>?
 
     init(
         coordinator: TrackingCoordinator,
@@ -30,30 +35,32 @@ final class LocationEventBridge: LocationMonitorDelegate {
     }
 
     func locationMonitorDidEnterRegion(at date: Date) {
-        let event = PresenceEvent(kind: .enter, occurredAt: date)
-        Task {
-            do {
-                try await sleep(debounceInterval)
-                try await coordinator.handleCandidate(event, validationDate: clock.now)
-            } catch {
-                logger.error("TrackingCoordinator enter failed: \(error, privacy: .public)")
-            }
-        }
+        scheduleValidation(for: PresenceEvent(kind: .enter, occurredAt: date))
     }
 
     func locationMonitorDidExitRegion(at date: Date) {
-        let event = PresenceEvent(kind: .exit, occurredAt: date)
-        Task {
-            do {
-                try await sleep(debounceInterval)
-                try await coordinator.handleCandidate(event, validationDate: clock.now)
-            } catch {
-                logger.error("TrackingCoordinator exit failed: \(error, privacy: .public)")
-            }
-        }
+        scheduleValidation(for: PresenceEvent(kind: .exit, occurredAt: date))
     }
 
     func locationMonitorDidFail(with error: Error) {
         logger.error("LocationMonitor failed: \(error, privacy: .public)")
+    }
+
+    // MARK: - Private
+
+    private func scheduleValidation(for event: PresenceEvent) {
+        pendingValidationTask?.cancel()
+        pendingValidationTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.sleep(self.debounceInterval)
+                try Task.checkCancellation()
+                try await self.coordinator.handleCandidate(event, validationDate: self.clock.now)
+            } catch is CancellationError {
+                // Superseded by a newer event — normal operation, not a tracking failure.
+            } catch {
+                self.logger.error("TrackingCoordinator validation failed: \(error, privacy: .public)")
+            }
+        }
     }
 }
