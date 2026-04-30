@@ -8,8 +8,7 @@ struct PresenceApp: App {
     var body: some Scene {
         WindowGroup {
             if appState.hasCompletedSetup {
-                Text("Presence Dashboard")
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                DashboardView(summary: .sample, attendanceDays: [])
                     .environment(appState)
             } else {
                 SetupView(appState: appState)
