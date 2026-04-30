@@ -1,4 +1,5 @@
 import CoreLocation
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -9,13 +10,22 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var appState = AppState()
+    @State private var storeLoadError = false
 
     // Held as @State so their lifetimes are tied to this view.
     @State private var trackingSession = TrackingSession()
 
+    private let logger = Logger(subsystem: "com.presence.app", category: "Setup")
+
     var body: some View {
         Group {
-            if appState.hasCompletedSetup {
+            if storeLoadError {
+                ContentUnavailableView(
+                    "Configuration Error",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("Could not load your saved workplace. Please restart the app.")
+                )
+            } else if appState.hasCompletedSetup {
                 DashboardLoader()
                     .environment(appState)
             } else {
@@ -36,9 +46,14 @@ struct RootView: View {
 
     private func loadPersistedSetup() async {
         let store = AttendanceStore(context: modelContext)
-        guard let config = try? store.fetchWorkplace(), config.completedSetup else { return }
-        appState.completeSetup(latitude: config.latitude, longitude: config.longitude, radiusMeters: config.radiusMeters)
-        startTracking(latitude: config.latitude, longitude: config.longitude, radiusMeters: config.radiusMeters)
+        do {
+            guard let config = try store.fetchWorkplace(), config.completedSetup else { return }
+            appState.completeSetup(latitude: config.latitude, longitude: config.longitude, radiusMeters: config.radiusMeters)
+            startTracking(latitude: config.latitude, longitude: config.longitude, radiusMeters: config.radiusMeters)
+        } catch {
+            logger.error("Failed to load persisted workplace config: \(error, privacy: .public)")
+            storeLoadError = true
+        }
     }
 
     private func startTracking(latitude: Double, longitude: Double, radiusMeters: Double) {
@@ -62,8 +77,9 @@ struct RootView: View {
 // MARK: - Tracking session container
 
 /// Holds tracking objects as a reference type so @State can capture them.
+/// @MainActor isolation serialises all access, satisfying Sendable.
 @MainActor
-private final class TrackingSession: @unchecked Sendable {
+private final class TrackingSession {
     var locationMonitor: LocationMonitor?
     var coordinator: TrackingCoordinator?
     var bridge: LocationEventBridge?

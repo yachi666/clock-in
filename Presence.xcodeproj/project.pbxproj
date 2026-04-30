@@ -13,6 +13,7 @@
 		0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
 		0E59D164B452E35ECC367972 /* PresenceEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCBE7DA86C5DD3C379C6C4 /* PresenceEvent.swift */; };
 		16E85594C64676350C74723A /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F318584BE86A765BA1E906A4 /* SetupView.swift */; };
+		F1A2B3C4D5E6F7A8B9C0D1E3 /* LocationEventBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A2B3C4D5E6F7A8B9C0D1E2 /* LocationEventBridgeTests.swift */; };
 		1AD9369987C2D38ED9615850 /* DashboardLoadCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE76261C28D5C676318B2EE /* DashboardLoadCoordinatorTests.swift */; };
 		3ADF5ABC9D2568340FA7211D /* DashboardLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12BE7B19AF821A6B8341ADE7 /* DashboardLoader.swift */; };
 		42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACECB606D5B3294C47680676 /* AppState.swift */; };
@@ -95,6 +96,7 @@
 		7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PresenceWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		81D5BF4EDF78A3D784017E80 /* TrackingCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingCoordinatorTests.swift; sourceTree = "<group>"; };
 		81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceLiveActivityWidget.swift; sourceTree = "<group>"; };
+		E1A2B3C4D5E6F7A8B9C0D1E2 /* LocationEventBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEventBridgeTests.swift; sourceTree = "<group>"; };
 		853D363080FD6BB61914C0E5 /* LocationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMonitorTests.swift; sourceTree = "<group>"; };
 		A5D3FF07465DBB02B4975483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A627AF16C52B08D52B6DFD2F /* HolidayCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayCalendar.swift; sourceTree = "<group>"; };
@@ -180,7 +182,8 @@
 				CBE76261C28D5C676318B2EE /* DashboardLoadCoordinatorTests.swift */,
 				C4F3635862A9B9C13C374CD3 /* HolidayCalendarTests.swift */,
 				355766B72D2B8BD666F42D86 /* Info.plist */,
-				853D363080FD6BB61914C0E5 /* LocationMonitorTests.swift */,
+				E1A2B3C4D5E6F7A8B9C0D1E2 /* LocationEventBridgeTests.swift */,
+			853D363080FD6BB61914C0E5 /* LocationMonitorTests.swift */,
 				27FD1A0E9BB542936BDE9447 /* MonthlySummaryTests.swift */,
 				B250761A8E3B84222FD0421E /* PresenceActivityControllerTests.swift */,
 				3C0F7E1D4778F01BE6ABA2E9 /* PresenceRulesTests.swift */,
@@ -382,6 +385,7 @@
 				761321081465C6159BF33AFD /* AppStateTests.swift in Sources */,
 				1AD9369987C2D38ED9615850 /* DashboardLoadCoordinatorTests.swift in Sources */,
 				DC4660FBC9EB8A761F9A62E1 /* HolidayCalendarTests.swift in Sources */,
+				F1A2B3C4D5E6F7A8B9C0D1E3 /* LocationEventBridgeTests.swift in Sources */,
 				D551AD179F9991FAD5BF7B6B /* LocationMonitorTests.swift in Sources */,
 				B391E21222E480B8FD30D748 /* MonthlySummaryTests.swift in Sources */,
 				A21853F871B6B58F3B9DE7CB /* PresenceActivityControllerTests.swift in Sources */,

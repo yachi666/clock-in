@@ -21,10 +21,11 @@ final class DashboardLoadCoordinatorTests: XCTestCase {
 
     private func makeCoordinator(
         context: ModelContext,
-        session: URLSession = makeStubSession(data: Data(), statusCode: 500)
+        session: URLSession = makeStubSession(data: Data(), statusCode: 500),
+        store: (any AttendanceDayFetching)? = nil
     ) -> DashboardLoadCoordinator {
         DashboardLoadCoordinator(
-            store: AttendanceStore(context: context),
+            store: store ?? AttendanceStore(context: context),
             holidayService: HolidayService(session: session),
             context: context
         )
@@ -174,6 +175,33 @@ final class DashboardLoadCoordinatorTests: XCTestCase {
         } else {
             XCTFail("Expected .holidayUnavailable but got \(result)")
         }
+    }
+
+    func testStoreFailureFallsBackToEmptyDays() async throws {
+        let context = try makeContext()
+        // Cache a valid holiday calendar so we exercise the cache-hit path.
+        try HolidayService().cache(HolidayCalendar(year: 2026, region: "CN", entries: []), in: context)
+
+        let coordinator = makeCoordinator(context: context, store: FailingAttendanceStore())
+        let result = await coordinator.load(monthIdentifier: "2026-05")
+
+        // Store failure falls back to empty day list; holiday cache still available → .loaded.
+        if case .loaded(let summary, let days) = result {
+            XCTAssertEqual(summary.presentDays, 0)
+            XCTAssertTrue(days.isEmpty)
+        } else {
+            XCTFail("Expected .loaded but got \(result)")
+        }
+    }
+}
+
+// MARK: - Stub store that always throws
+
+@MainActor
+private final class FailingAttendanceStore: AttendanceDayFetching {
+    enum Err: Error { case forced }
+    func fetchAttendanceDays(inMonth month: Date, calendar: Calendar) throws -> [AttendanceDayModel] {
+        throw Err.forced
     }
 }
 
