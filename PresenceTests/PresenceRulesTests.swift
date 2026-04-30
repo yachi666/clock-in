@@ -47,6 +47,24 @@ final class PresenceRulesTests: XCTestCase {
         XCTAssertEqual(day.totalDuration, 0)
     }
 
+    func testExitAtFourAMBelongsToSameDay() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
+        let rules = PresenceRules(calendar: calendar)
+        let exit = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 5, day: 2, hour: 4, minute: 0)))
+
+        XCTAssertEqual(rules.attendanceDayIdentifier(forExitAt: exit), "2026-05-02")
+    }
+
+    func testExitEventUsesSameDebounceWindow() {
+        let calendar = Calendar(identifier: .gregorian)
+        let rules = PresenceRules(calendar: calendar)
+        let event = PresenceEvent(kind: .exit, occurredAt: Date(timeIntervalSince1970: 1_000))
+
+        XCTAssertEqual(rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 9 * 60 + 59)), .pending)
+        XCTAssertEqual(rules.validate(candidate: event, at: Date(timeIntervalSince1970: 1_000 + 10 * 60)), .validated(event))
+    }
+
     func testBuildAttendanceDayFromValidatedEnterAndExit() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!

@@ -436,12 +436,6 @@ final class HolidayCalendarCacheModel {
     }
 }
 
-enum AttendanceStatus: String, Codable, Hashable {
-    case present
-    case absent
-    case pending
-}
-
 enum HolidayDataAvailability: String, Codable, Hashable {
     case fresh
     case cached
@@ -522,11 +516,9 @@ final class AttendanceStore {
     }
 }
 
-func dayIdentifier(for date: Date, calendar: Calendar = .current) -> String {
-    let components = calendar.dateComponents([.year, .month, .day], from: date)
-    return String(format: "%04d-%02d-%02d", components.year!, components.month!, components.day!)
-}
 ```
+
+> **Note:** `AttendanceStatus` and `dayIdentifier(for:calendar:)` are provided by `Shared/Domain` (in `PresenceEvent.swift` and `DayIdentifier.swift` respectively) and must be reused — do not redefine them here.
 
 - [ ] **Step 3: Inject SwiftData model container**
 

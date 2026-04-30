@@ -15,7 +15,7 @@ struct PresenceRules {
 
     func attendanceDayIdentifier(forExitAt date: Date) -> String {
         let hour = calendar.component(.hour, from: date)
-        let attributedDate = hour < 4 ? calendar.date(byAdding: .day, value: -1, to: date)! : date
+        let attributedDate = (hour < 4 ? calendar.date(byAdding: .day, value: -1, to: date) : nil) ?? date
         return dayIdentifier(for: attributedDate, calendar: calendar)
     }
 
@@ -30,9 +30,4 @@ struct PresenceRules {
             status: leftAt.map { arrivedAt <= $0 } == true ? .present : .pending
         )
     }
-}
-
-func dayIdentifier(for date: Date, calendar: Calendar = .current) -> String {
-    let components = calendar.dateComponents([.year, .month, .day], from: date)
-    return String(format: "%04d-%02d-%02d", components.year!, components.month!, components.day!)
 }

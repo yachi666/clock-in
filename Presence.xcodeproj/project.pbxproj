@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		078EB9D83DDFCA8A19F60812 /* DayIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B66BB8BB307BFF7E8C8355 /* DayIdentifier.swift */; };
 		0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
 		0E59D164B452E35ECC367972 /* PresenceEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCBE7DA86C5DD3C379C6C4 /* PresenceEvent.swift */; };
 		42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACECB606D5B3294C47680676 /* AppState.swift */; };
@@ -64,6 +65,7 @@
 		A5D3FF07465DBB02B4975483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		ACECB606D5B3294C47680676 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		B61384EA1B1EA84482A6C6F7 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
+		C6B66BB8BB307BFF7E8C8355 /* DayIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayIdentifier.swift; sourceTree = "<group>"; };
 		CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceRules.swift; sourceTree = "<group>"; };
 		D587EFD2262F16AC122C36B8 /* PresenceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PresenceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -73,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				B61384EA1B1EA84482A6C6F7 /* Clock.swift */,
+				C6B66BB8BB307BFF7E8C8355 /* DayIdentifier.swift */,
 				47FCBE7DA86C5DD3C379C6C4 /* PresenceEvent.swift */,
 				CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */,
 			);
@@ -275,6 +278,7 @@
 			files = (
 				42CE4F86F9DE6CB3BBF65B75 /* AppState.swift in Sources */,
 				5B5C00C89CC2E9F3782847EB /* Clock.swift in Sources */,
+				078EB9D83DDFCA8A19F60812 /* DayIdentifier.swift in Sources */,
 				0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */,
 				F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */,
 				0E59D164B452E35ECC367972 /* PresenceEvent.swift in Sources */,
