@@ -27,7 +27,7 @@ struct PresenceRules {
             arrivedAt: arrivedAt,
             leftAt: leftAt,
             totalDuration: duration,
-            status: arrivedAt <= (leftAt ?? arrivedAt) ? .present : .pending
+            status: leftAt.map { arrivedAt <= $0 } == true ? .present : .pending
         )
     }
 }

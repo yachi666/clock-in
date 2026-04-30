@@ -33,6 +33,20 @@ final class PresenceRulesTests: XCTestCase {
         XCTAssertEqual(id, "2026-05-01")
     }
 
+    func testBuildAttendanceDayWithoutExitIsPending() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
+        let rules = PresenceRules(calendar: calendar)
+        let arrivedAt = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 5, day: 1, hour: 9, minute: 12)))
+
+        let day = rules.buildAttendanceDay(arrivedAt: arrivedAt, leftAt: nil)
+
+        XCTAssertEqual(day.dayIdentifier, "2026-05-01")
+        XCTAssertEqual(day.status, .pending)
+        XCTAssertNil(day.leftAt)
+        XCTAssertEqual(day.totalDuration, 0)
+    }
+
     func testBuildAttendanceDayFromValidatedEnterAndExit() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
