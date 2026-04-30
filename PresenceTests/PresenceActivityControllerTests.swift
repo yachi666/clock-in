@@ -10,6 +10,7 @@ final class PresenceActivityControllerTests: XCTestCase {
         var areActivitiesEnabled = true
         var requestShouldThrow = false
         var requestCallCount = 0
+        private(set) var lastCreatedHandle: FakeHandle?
 
         enum ClientError: Error { case requestFailed }
 
@@ -20,7 +21,9 @@ final class PresenceActivityControllerTests: XCTestCase {
         ) throws -> any ActivityEnding {
             requestCallCount += 1
             if requestShouldThrow { throw ClientError.requestFailed }
-            return FakeHandle(initialState: contentState)
+            let handle = FakeHandle(initialState: contentState)
+            lastCreatedHandle = handle
+            return handle
         }
     }
 
@@ -105,8 +108,8 @@ final class PresenceActivityControllerTests: XCTestCase {
         await sut.start(arrivedAt: arrivedAt)
 
         XCTAssertEqual(client.requestCallCount, 1)
-        let handle = (client as AnyObject) as? FakeClient  // just to confirm it was called
-        _ = handle  // suppress warning; actual state checked via handle below
+        XCTAssertEqual(client.lastCreatedHandle?.initialState.arrivedAt, arrivedAt)
+        XCTAssertEqual(client.lastCreatedHandle?.initialState.elapsedSeconds ?? -1, 30, accuracy: 0.001)
     }
 
     func testStartPassesElapsedSecondsToContentState() async {
@@ -175,12 +178,18 @@ final class PresenceActivityControllerTests: XCTestCase {
         let (sut, _) = makeSUT(client: client)
 
         await sut.start(arrivedAt: t0)
+        let handle = client.lastCreatedHandle
 
-        // Grab the handle before end
-        // After end, a subsequent start should succeed (activity cleared)
         await sut.end()
 
-        // Re-start should be allowed (currentActivity is nil again)
+        XCTAssertEqual(handle?.endCallCount, 1, "end(contentState:) must be called exactly once")
+        let expectedState = PresenceActivityAttributes.ContentState(
+            arrivedAt: t0,
+            elapsedSeconds: 100  // makeSUT uses now = timeIntervalSince1970: 100, t0 = 0
+        )
+        XCTAssertEqual(handle?.lastEndedState, expectedState, "Must end with the state that was set on start")
+
+        // After end, currentActivity is nil — a new start must be allowed
         await sut.start(arrivedAt: t0)
         XCTAssertEqual(client.requestCallCount, 2, "Activity should be clearable so a new one can start")
     }

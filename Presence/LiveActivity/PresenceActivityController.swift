@@ -2,9 +2,6 @@ import ActivityKit
 import Foundation
 import OSLog
 
-// Explicit Sendable conformance — ContentState is a value type with only Sendable stored properties.
-extension PresenceActivityAttributes.ContentState: @unchecked Sendable {}
-
 // MARK: - Narrow ActivityKit abstractions (enables unit testing without real ActivityKit)
 
 protocol ActivityRequesting: Sendable {
@@ -42,6 +39,8 @@ struct DefaultActivityRequester: ActivityRequesting {
     }
 }
 
+// @unchecked Sendable is safe: the Activity<> value is only ever accessed through
+// the @MainActor `end(contentState:)` method, so no data races can occur.
 private final class ActivityKitHandle: ActivityEnding, @unchecked Sendable {
     private var activity: Activity<PresenceActivityAttributes>
 
@@ -50,7 +49,7 @@ private final class ActivityKitHandle: ActivityEnding, @unchecked Sendable {
     }
 
     @MainActor func end(contentState: PresenceActivityAttributes.ContentState) async {
-        await activity.end(using: contentState, dismissalPolicy: .immediate)
+        await activity.end(ActivityContent(state: contentState, staleDate: nil), dismissalPolicy: .immediate)
     }
 }
 

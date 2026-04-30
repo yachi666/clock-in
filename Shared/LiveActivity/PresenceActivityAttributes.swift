@@ -2,7 +2,7 @@ import ActivityKit
 import Foundation
 
 public struct PresenceActivityAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
+    public struct ContentState: Codable, Hashable, Sendable {
         public var arrivedAt: Date
         public var elapsedSeconds: TimeInterval
 
