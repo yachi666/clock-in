@@ -3,17 +3,9 @@ import SwiftUI
 
 @main
 struct PresenceApp: App {
-    @State private var appState = AppState()
-
     var body: some Scene {
         WindowGroup {
-            if appState.hasCompletedSetup {
-                DashboardView(summary: .sample, attendanceDays: [])
-                    .environment(appState)
-            } else {
-                SetupView(appState: appState)
-                    .environment(appState)
-            }
+            RootView()
         }
         .modelContainer(for: [
             WorkplaceConfigModel.self,

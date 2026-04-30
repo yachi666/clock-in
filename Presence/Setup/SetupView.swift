@@ -1,8 +1,10 @@
 import MapKit
+import SwiftData
 import SwiftUI
 
 struct SetupView: View {
     @Bindable var appState: AppState
+    let store: AttendanceStore
 
     @State private var position: MapCameraPosition = .region(
         MKCoordinateRegion(
@@ -14,6 +16,7 @@ struct SetupView: View {
     @State private var mapCenter: CLLocationCoordinate2D = CLLocationCoordinate2D(
         latitude: 31.2304, longitude: 121.4737
     )
+    @State private var saveError: Error?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -49,12 +52,29 @@ struct SetupView: View {
 
             Slider(value: $radiusMeters, in: 100...500, step: 10)
 
+            if let error = saveError {
+                Text("Failed to save: \(error.localizedDescription)")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+
             Button {
-                appState.completeSetup(
-                    latitude: mapCenter.latitude,
-                    longitude: mapCenter.longitude,
-                    radiusMeters: radiusMeters
-                )
+                do {
+                    try store.saveWorkplace(
+                        latitude: mapCenter.latitude,
+                        longitude: mapCenter.longitude,
+                        radiusMeters: radiusMeters
+                    )
+                    saveError = nil
+                    appState.completeSetup(
+                        latitude: mapCenter.latitude,
+                        longitude: mapCenter.longitude,
+                        radiusMeters: radiusMeters
+                    )
+                } catch {
+                    saveError = error
+                }
             } label: {
                 Text("Start Tracking")
                     .frame(maxWidth: .infinity)
@@ -70,5 +90,9 @@ struct SetupView: View {
 }
 
 #Preview {
-    SetupView(appState: AppState())
+    let schema = Schema([WorkplaceConfigModel.self, RegionEventModel.self, AttendanceDayModel.self, HolidayCalendarCacheModel.self])
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: schema, configurations: [config])
+    let store = AttendanceStore(context: ModelContext(container))
+    SetupView(appState: AppState(), store: store)
 }

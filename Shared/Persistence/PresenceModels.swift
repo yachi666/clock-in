@@ -85,3 +85,17 @@ enum HolidayDataAvailability: String, Codable, Hashable {
     case cached
     case unavailable
 }
+
+// MARK: - Domain conversion
+
+extension AttendanceDayModel {
+    func toAttendanceDay() -> AttendanceDay {
+        AttendanceDay(
+            dayIdentifier: dayIdentifier,
+            arrivedAt: arrivedAt,
+            leftAt: leftAt,
+            totalDuration: totalDuration,
+            status: AttendanceStatus(rawValue: statusRawValue) ?? .pending
+        )
+    }
+}

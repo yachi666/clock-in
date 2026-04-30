@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     let summary: MonthlySummary
     let attendanceDays: [AttendanceDay]
+    var workingDaysUnavailable: Bool = false
 
     @State private var selectedDay: AttendanceDay? = nil
 
@@ -98,23 +99,32 @@ struct DashboardView: View {
                         .font(.system(size: 34, weight: .bold, design: .rounded))
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Working Days")
+                if workingDaysUnavailable {
+                    Text("Working day data unavailable")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("\(summary.workingDays)")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
+                } else {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("Working Days")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("\(summary.workingDays)")
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
-            ProgressView(value: progress)
-                .tint(.green)
-                .scaleEffect(x: 1, y: 2, anchor: .center)
+            if !workingDaysUnavailable {
+                ProgressView(value: progress)
+                    .tint(.green)
+                    .scaleEffect(x: 1, y: 2, anchor: .center)
 
-            Text("\(Int(progress * 100))% attendance rate")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                Text("\(Int(progress * 100))% attendance rate")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -291,16 +301,20 @@ private let sampleAttendanceDays: [AttendanceDay] = (1...15).map { day in
     )
 }
 
-// Placeholder initializer for display fixtures — bypasses holiday calendar computation.
-private extension MonthlySummary {
+// Placeholder initializer for display fixtures and unavailable holiday state.
+extension MonthlySummary {
     init(placeholder monthIdentifier: String, presentDays: Int, workingDays: Int) {
         self.monthIdentifier = monthIdentifier
         self.presentDays = presentDays
         self.workingDays = workingDays
     }
+
+    static func unavailable(monthIdentifier: String, presentDays: Int) -> MonthlySummary {
+        MonthlySummary(placeholder: monthIdentifier, presentDays: presentDays, workingDays: 0)
+    }
 }
 
-// TODO: Task 9 - replace this placeholder with real SwiftData/cache-backed data.
+// TODO: Task 9 complete — sample retained for previews only.
 extension MonthlySummary {
     static let sample = MonthlySummary(placeholder: "2026-04", presentDays: 15, workingDays: 22)
 }
