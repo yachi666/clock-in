@@ -33,9 +33,3 @@ final class TrackingCoordinator: Sendable {
         }
     }
 }
-
-extension AttendanceStore: TrackingStore {
-    func save(_ event: PresenceEvent) async throws {
-        try saveRegionEvent(event, isValidated: true)
-    }
-}

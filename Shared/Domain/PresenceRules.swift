@@ -2,7 +2,7 @@ import Foundation
 
 struct PresenceRules {
     private let debounceInterval: TimeInterval
-    private let calendar: Calendar
+    let calendar: Calendar
 
     init(debounceInterval: TimeInterval = 10 * 60, calendar: Calendar = .current) {
         self.debounceInterval = debounceInterval

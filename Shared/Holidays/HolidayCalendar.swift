@@ -98,9 +98,9 @@ enum DateParser {
 }
 
 extension Calendar {
-    static var gregorianCN: Calendar {
+    static let gregorianCN: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
         return calendar
-    }
+    }()
 }

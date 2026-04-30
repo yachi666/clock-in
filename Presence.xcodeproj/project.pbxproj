@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		078EB9D83DDFCA8A19F60812 /* DayIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B66BB8BB307BFF7E8C8355 /* DayIdentifier.swift */; };
+		967AE6D49577AC030E04F7AD /* AttendanceStoreTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34DF0D801D757FFF5E87E48 /* AttendanceStoreTrackingTests.swift */; };
 		0A6E8546F62A6B67CF400C9B /* AttendanceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA67AA47650D9671E84B37C /* AttendanceStore.swift */; };
 		0B4616AEEA3B2F31C1E0FC8A /* TrackingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0828CD30F4A97AD687DFB1 /* TrackingCoordinator.swift */; };
 		0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
@@ -111,6 +112,7 @@
 		CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceRules.swift; sourceTree = "<group>"; };
 		D587EFD2262F16AC122C36B8 /* PresenceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PresenceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D92824F6BF960DA9EFB03194 /* LocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMonitor.swift; sourceTree = "<group>"; };
+		D34DF0D801D757FFF5E87E48 /* AttendanceStoreTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStoreTrackingTests.swift; sourceTree = "<group>"; };
 		F318584BE86A765BA1E906A4 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -179,6 +181,7 @@
 			isa = PBXGroup;
 			children = (
 				0D8B304A44DF20D4240693AB /* AppStateTests.swift */,
+				D34DF0D801D757FFF5E87E48 /* AttendanceStoreTrackingTests.swift */,
 				CBE76261C28D5C676318B2EE /* DashboardLoadCoordinatorTests.swift */,
 				C4F3635862A9B9C13C374CD3 /* HolidayCalendarTests.swift */,
 				355766B72D2B8BD666F42D86 /* Info.plist */,
@@ -383,6 +386,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				761321081465C6159BF33AFD /* AppStateTests.swift in Sources */,
+				967AE6D49577AC030E04F7AD /* AttendanceStoreTrackingTests.swift in Sources */,
 				1AD9369987C2D38ED9615850 /* DashboardLoadCoordinatorTests.swift in Sources */,
 				DC4660FBC9EB8A761F9A62E1 /* HolidayCalendarTests.swift in Sources */,
 				F1A2B3C4D5E6F7A8B9C0D1E3 /* LocationEventBridgeTests.swift in Sources */,
