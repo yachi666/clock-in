@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 @main
@@ -10,5 +11,11 @@ struct PresenceApp: App {
                 .font(.system(size: 28, weight: .semibold, design: .rounded))
                 .environment(appState)
         }
+        .modelContainer(for: [
+            WorkplaceConfigModel.self,
+            RegionEventModel.self,
+            AttendanceDayModel.self,
+            HolidayCalendarCacheModel.self
+        ])
     }
 }
