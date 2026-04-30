@@ -18,12 +18,14 @@
 		5B5C00C89CC2E9F3782847EB /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61384EA1B1EA84482A6C6F7 /* Clock.swift */; };
 		5DD5CC95A781982684DC03BD /* LocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92824F6BF960DA9EFB03194 /* LocationMonitor.swift */; };
 		60EE97A3B10707A4DAF5153F /* PresenceRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFB3A14DDFC6E377AC47CAA1 /* PresenceRules.swift */; };
+		64261EEE799976BA78D9834C /* PresenceActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C9F355608E3436EDD71C02F /* PresenceActivityController.swift */; };
 		761321081465C6159BF33AFD /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D8B304A44DF20D4240693AB /* AppStateTests.swift */; };
 		76EC23257DCE0EA23EF246F0 /* HolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323F3EF35D2E66AD63856FF5 /* HolidayService.swift */; };
 		7F90BF5296EC3F2259A6A8B8 /* PresenceWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7DD17BD2C7B29D1C17C2CB56 /* PresenceWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9357E4DC89D047FD6BEBD93F /* PresenceLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D6BB9966E347AB12917200 /* PresenceLiveActivityWidget.swift */; };
 		9AC4166D88C65F0D07476834 /* PresenceRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0F7E1D4778F01BE6ABA2E9 /* PresenceRulesTests.swift */; };
 		9CEB644C4ADED644F9CEC53E /* MonthlySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 550570EE40A97C6668B0002C /* MonthlySummary.swift */; };
+		A21853F871B6B58F3B9DE7CB /* PresenceActivityControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B250761A8E3B84222FD0421E /* PresenceActivityControllerTests.swift */; };
 		B391E21222E480B8FD30D748 /* MonthlySummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27FD1A0E9BB542936BDE9447 /* MonthlySummaryTests.swift */; };
 		B47C2DF8CF59522F13E496A7 /* TrackingCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D5BF4EDF78A3D784017E80 /* TrackingCoordinatorTests.swift */; };
 		C208D319E129CD5D4A5B679F /* PresenceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */; };
@@ -71,6 +73,7 @@
 		08AD6C98BA2C383D43D0F939 /* PresenceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceApp.swift; sourceTree = "<group>"; };
 		0D8B304A44DF20D4240693AB /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
 		13F335A64E79527DFA7F4EAF /* PresenceActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceActivityAttributes.swift; sourceTree = "<group>"; };
+		1C9F355608E3436EDD71C02F /* PresenceActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceActivityController.swift; sourceTree = "<group>"; };
 		27FD1A0E9BB542936BDE9447 /* MonthlySummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlySummaryTests.swift; sourceTree = "<group>"; };
 		323F3EF35D2E66AD63856FF5 /* HolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayService.swift; sourceTree = "<group>"; };
 		355766B72D2B8BD666F42D86 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -88,6 +91,7 @@
 		A627AF16C52B08D52B6DFD2F /* HolidayCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayCalendar.swift; sourceTree = "<group>"; };
 		A85DA543FD67173494B66C07 /* PresenceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceModels.swift; sourceTree = "<group>"; };
 		ACECB606D5B3294C47680676 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		B250761A8E3B84222FD0421E /* PresenceActivityControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceActivityControllerTests.swift; sourceTree = "<group>"; };
 		B61384EA1B1EA84482A6C6F7 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		C4F3635862A9B9C13C374CD3 /* HolidayCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayCalendarTests.swift; sourceTree = "<group>"; };
 		C6B66BB8BB307BFF7E8C8355 /* DayIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayIdentifier.swift; sourceTree = "<group>"; };
@@ -120,6 +124,14 @@
 				54956FEFCBD9D0453EC161D1 /* Persistence */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		39C7529889192C5D6AD106C1 /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				1C9F355608E3436EDD71C02F /* PresenceActivityController.swift */,
+			);
+			path = LiveActivity;
 			sourceTree = "<group>";
 		};
 		54956FEFCBD9D0453EC161D1 /* Persistence */ = {
@@ -159,6 +171,7 @@
 				355766B72D2B8BD666F42D86 /* Info.plist */,
 				853D363080FD6BB61914C0E5 /* LocationMonitorTests.swift */,
 				27FD1A0E9BB542936BDE9447 /* MonthlySummaryTests.swift */,
+				B250761A8E3B84222FD0421E /* PresenceActivityControllerTests.swift */,
 				3C0F7E1D4778F01BE6ABA2E9 /* PresenceRulesTests.swift */,
 				81D5BF4EDF78A3D784017E80 /* TrackingCoordinatorTests.swift */,
 			);
@@ -197,6 +210,7 @@
 				043FE37783BD7563D01AC040 /* Presence.entitlements */,
 				E8E5EB05A76C03676F57DD4E /* App */,
 				D72D3BB0344C83D2E6B9D0AC /* Dashboard */,
+				39C7529889192C5D6AD106C1 /* LiveActivity */,
 				6E7B11BD03CFE7E8CD7FEBEB /* Setup */,
 				90249669E14D1297F91D7CE9 /* Tracking */,
 			);
@@ -354,6 +368,7 @@
 				DC4660FBC9EB8A761F9A62E1 /* HolidayCalendarTests.swift in Sources */,
 				D551AD179F9991FAD5BF7B6B /* LocationMonitorTests.swift in Sources */,
 				B391E21222E480B8FD30D748 /* MonthlySummaryTests.swift in Sources */,
+				A21853F871B6B58F3B9DE7CB /* PresenceActivityControllerTests.swift in Sources */,
 				9AC4166D88C65F0D07476834 /* PresenceRulesTests.swift in Sources */,
 				B47C2DF8CF59522F13E496A7 /* TrackingCoordinatorTests.swift in Sources */,
 			);
@@ -373,6 +388,7 @@
 				5DD5CC95A781982684DC03BD /* LocationMonitor.swift in Sources */,
 				9CEB644C4ADED644F9CEC53E /* MonthlySummary.swift in Sources */,
 				0C224FE2C0C8ACCB3CFC8D23 /* PresenceActivityAttributes.swift in Sources */,
+				64261EEE799976BA78D9834C /* PresenceActivityController.swift in Sources */,
 				F73D0D8CEE2E2EA4F2503234 /* PresenceApp.swift in Sources */,
 				0E59D164B452E35ECC367972 /* PresenceEvent.swift in Sources */,
 				43EBA266B46F5B5407DC2262 /* PresenceModels.swift in Sources */,
