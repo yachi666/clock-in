@@ -17,12 +17,12 @@ final class AppStateTests: XCTestCase {
         ))
     }
 
-    func testCompleteSetupStoresExactValues() {
+    func testCompleteSetupStoresExactValues() throws {
         let sut = AppState()
 
         sut.completeSetup(latitude: 40.7128, longitude: -74.0060, radiusMeters: 150)
 
-        let draft = try! XCTUnwrap(sut.workplaceDraft)
+        let draft = try XCTUnwrap(sut.workplaceDraft)
         XCTAssertEqual(draft.latitude, 40.7128, accuracy: 0.00001)
         XCTAssertEqual(draft.longitude, -74.0060, accuracy: 0.00001)
         XCTAssertEqual(draft.radiusMeters, 150)

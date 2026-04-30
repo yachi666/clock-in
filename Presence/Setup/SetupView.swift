@@ -17,20 +17,18 @@ struct SetupView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            MapReader { proxy in
-                Map(position: $position)
-                    .onMapCameraChange { context in
-                        mapCenter = context.region.center
-                    }
-                    .ignoresSafeArea()
-                    .overlay {
-                        // Center crosshair
-                        Image(systemName: "plus")
-                            .font(.title)
-                            .foregroundStyle(.primary)
-                            .shadow(radius: 2)
-                    }
-            }
+            Map(position: $position)
+                .onMapCameraChange { context in
+                    mapCenter = context.region.center
+                }
+                .ignoresSafeArea()
+                .overlay {
+                    // Center crosshair
+                    Image(systemName: "plus")
+                        .font(.title)
+                        .foregroundStyle(.primary)
+                        .shadow(radius: 2)
+                }
 
             bottomCard
         }

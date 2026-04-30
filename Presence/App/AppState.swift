@@ -8,6 +8,7 @@ struct WorkplaceDraft: Equatable {
 }
 
 @Observable
+@MainActor
 final class AppState {
     var hasCompletedSetup: Bool
     var workplaceDraft: WorkplaceDraft?
