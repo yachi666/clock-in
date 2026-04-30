@@ -45,23 +45,35 @@ final class LocationMonitor: NSObject {
         region.notifyOnEntry = true
         region.notifyOnExit = true
         pendingRegion = region
-        manager.requestWhenInUseAuthorization()
+        if manager.authorizationStatus == .notDetermined {
+            manager.requestWhenInUseAuthorization()
+        } else {
+            handleAuthorizationChange()
+        }
     }
 
     // Internal for testability; called by the CLLocationManagerDelegate callback.
     func handleAuthorizationChange() {
+        guard pendingRegion != nil else { return }
         switch manager.authorizationStatus {
         case .authorizedWhenInUse:
             manager.requestAlwaysAuthorization()
         case .authorizedAlways:
             if let region = pendingRegion {
                 manager.startMonitoring(for: region)
+                pendingRegion = nil
             }
         case .denied, .restricted:
             delegate?.locationMonitorDidFail(with: LocationMonitorError.authorizationDenied)
+            pendingRegion = nil
         default:
             break
         }
+    }
+
+    // Internal for testability; called by the CLLocationManagerDelegate callback.
+    func handleMonitoringFailure(_ error: Error) {
+        delegate?.locationMonitorDidFail(with: LocationMonitorError.regionMonitoringFailed(error))
     }
 }
 
@@ -94,9 +106,7 @@ extension LocationMonitor: CLLocationManagerDelegate {
         withError error: Error
     ) {
         Task { @MainActor [weak self] in
-            self?.delegate?.locationMonitorDidFail(
-                with: LocationMonitorError.regionMonitoringFailed(error)
-            )
+            self?.handleMonitoringFailure(error)
         }
     }
 }

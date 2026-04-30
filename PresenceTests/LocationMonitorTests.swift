@@ -90,28 +90,19 @@ final class LocationMonitorTests: XCTestCase {
         XCTAssertTrue(region?.notifyOnExit ?? false)
     }
 
-    // Monitoring failure is forwarded to delegate.
+    // Monitoring failure is forwarded to delegate synchronously via handleMonitoringFailure(_:).
     func testMonitoringFailureForwardedToDelegate() {
         let (sut, _, fakeDelegate) = makeSUT()
         let fakeError = NSError(domain: "test", code: 1)
 
-        let fakeCLManager = CLLocationManager()
-        sut.locationManager(fakeCLManager, monitoringDidFailFor: nil, withError: fakeError)
+        sut.handleMonitoringFailure(fakeError)
 
-        // Delegate call is dispatched asynchronously via Task; use expectation.
-        let expectation = expectation(description: "error forwarded")
-        Task { @MainActor in
-            // Yield to let the dispatched Task run.
-            await Task.yield()
-            XCTAssertEqual(fakeDelegate.receivedErrors.count, 1)
-            if case LocationMonitorError.regionMonitoringFailed(let e) = fakeDelegate.receivedErrors.first! {
-                XCTAssertEqual((e as NSError).code, 1)
-            } else {
-                XCTFail("Expected regionMonitoringFailed error")
-            }
-            expectation.fulfill()
+        XCTAssertEqual(fakeDelegate.receivedErrors.count, 1)
+        if case LocationMonitorError.regionMonitoringFailed(let e) = fakeDelegate.receivedErrors.first! {
+            XCTAssertEqual((e as NSError).code, 1)
+        } else {
+            XCTFail("Expected regionMonitoringFailed error")
         }
-        wait(for: [expectation], timeout: 1)
     }
 
     // Denied authorization is forwarded as an error.
@@ -144,5 +135,67 @@ final class LocationMonitorTests: XCTestCase {
         } else {
             XCTFail("Expected authorizationDenied error")
         }
+    }
+
+    // Pre-authorized (.authorizedWhenInUse): startMonitoring should immediately request Always.
+    func testStartMonitoringWithAlreadyWhenInUseRequestsAlwaysImmediately() {
+        let (sut, fakeManager, _) = makeSUT(status: .authorizedWhenInUse)
+
+        sut.startMonitoring(coordinate: coordinate, radius: radius)
+
+        XCTAssertEqual(fakeManager.requestWhenInUseCount, 0, "Should not request When-In-Use for pre-authorized state")
+        XCTAssertEqual(fakeManager.requestAlwaysCount, 1, "Should request Always immediately")
+        XCTAssertTrue(fakeManager.startedRegions.isEmpty, "Should not start region yet")
+    }
+
+    // Pre-authorized (.authorizedAlways): startMonitoring should start the region immediately.
+    func testStartMonitoringWithAlreadyAuthorizedAlwaysStartsRegionImmediately() {
+        let (sut, fakeManager, _) = makeSUT(status: .authorizedAlways)
+
+        sut.startMonitoring(coordinate: coordinate, radius: radius)
+
+        XCTAssertEqual(fakeManager.requestWhenInUseCount, 0)
+        XCTAssertEqual(fakeManager.requestAlwaysCount, 0)
+        XCTAssertEqual(fakeManager.startedRegions.count, 1)
+        let region = fakeManager.startedRegions.first as? CLCircularRegion
+        XCTAssertEqual(region?.identifier, "workplace")
+    }
+
+    // Pre-denied: startMonitoring reports authorizationDenied immediately.
+    func testStartMonitoringWithDeniedStatusReportsErrorImmediately() {
+        let (sut, fakeManager, fakeDelegate) = makeSUT(status: .denied)
+
+        sut.startMonitoring(coordinate: coordinate, radius: radius)
+
+        XCTAssertEqual(fakeManager.requestWhenInUseCount, 0)
+        XCTAssertTrue(fakeManager.startedRegions.isEmpty)
+        XCTAssertEqual(fakeDelegate.receivedErrors.count, 1)
+        if case LocationMonitorError.authorizationDenied = fakeDelegate.receivedErrors.first! {
+            // correct
+        } else {
+            XCTFail("Expected authorizationDenied error")
+        }
+    }
+
+    // handleAuthorizationChange before startMonitoring is called is a no-op.
+    func testAuthorizationCallbackBeforeStartMonitoringDoesNothing() {
+        let (sut, fakeManager, _) = makeSUT(status: .authorizedWhenInUse)
+
+        sut.handleAuthorizationChange()
+
+        XCTAssertEqual(fakeManager.requestAlwaysCount, 0, "Should ignore callback before monitoring is requested")
+        XCTAssertTrue(fakeManager.startedRegions.isEmpty)
+    }
+
+    // Repeated .authorizedAlways callbacks do not start the region a second time.
+    func testRepeatedAuthorizedAlwaysCallbackDoesNotStartRegionTwice() {
+        let (sut, fakeManager, _) = makeSUT()
+        sut.startMonitoring(coordinate: coordinate, radius: radius)
+
+        fakeManager.authorizationStatus = .authorizedAlways
+        sut.handleAuthorizationChange()
+        sut.handleAuthorizationChange()
+
+        XCTAssertEqual(fakeManager.startedRegions.count, 1, "Should not start region a second time")
     }
 }
