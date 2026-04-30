@@ -32,6 +32,7 @@ final class LocationMonitor: NSObject {
     private let manager: any CLLocationManaging
     private let clock: any Clock
     private var pendingRegion: CLCircularRegion?
+    private var hasRequestedAlwaysAuthorization = false
 
     init(clock: any Clock = SystemClock(), manager: (any CLLocationManaging)? = nil) {
         self.clock = clock
@@ -45,6 +46,7 @@ final class LocationMonitor: NSObject {
         region.notifyOnEntry = true
         region.notifyOnExit = true
         pendingRegion = region
+        hasRequestedAlwaysAuthorization = false
         if manager.authorizationStatus == .notDetermined {
             manager.requestWhenInUseAuthorization()
         } else {
@@ -57,15 +59,25 @@ final class LocationMonitor: NSObject {
         guard pendingRegion != nil else { return }
         switch manager.authorizationStatus {
         case .authorizedWhenInUse:
-            manager.requestAlwaysAuthorization()
+            if !hasRequestedAlwaysAuthorization {
+                hasRequestedAlwaysAuthorization = true
+                manager.requestAlwaysAuthorization()
+            } else {
+                // User declined the Always upgrade; treat as denied.
+                delegate?.locationMonitorDidFail(with: LocationMonitorError.authorizationDenied)
+                pendingRegion = nil
+                hasRequestedAlwaysAuthorization = false
+            }
         case .authorizedAlways:
             if let region = pendingRegion {
                 manager.startMonitoring(for: region)
                 pendingRegion = nil
+                hasRequestedAlwaysAuthorization = false
             }
         case .denied, .restricted:
             delegate?.locationMonitorDidFail(with: LocationMonitorError.authorizationDenied)
             pendingRegion = nil
+            hasRequestedAlwaysAuthorization = false
         default:
             break
         }

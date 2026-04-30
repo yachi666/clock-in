@@ -177,6 +177,32 @@ final class LocationMonitorTests: XCTestCase {
         }
     }
 
+    // Declined Always upgrade: second .authorizedWhenInUse callback reports authorizationDenied,
+    // no region starts, and subsequent callbacks don't re-request Always or emit duplicate errors.
+    func testDeclinedAlwaysUpgradeReportsDeniedAndClearsState() {
+        let (sut, fakeManager, fakeDelegate) = makeSUT(status: .authorizedWhenInUse)
+
+        sut.startMonitoring(coordinate: coordinate, radius: radius)
+        XCTAssertEqual(fakeManager.requestAlwaysCount, 1, "Should request Always once on start")
+
+        // Simulate user declining the Always upgrade — iOS calls back with .authorizedWhenInUse again
+        sut.handleAuthorizationChange()
+
+        XCTAssertEqual(fakeDelegate.receivedErrors.count, 1, "Should report exactly one error")
+        if case LocationMonitorError.authorizationDenied = fakeDelegate.receivedErrors.first! {
+            // correct
+        } else {
+            XCTFail("Expected authorizationDenied error")
+        }
+        XCTAssertTrue(fakeManager.startedRegions.isEmpty, "No region should be started after declined upgrade")
+        XCTAssertEqual(fakeManager.requestAlwaysCount, 1, "Should not request Always a second time")
+
+        // Further callbacks must be no-ops (pending cleared)
+        sut.handleAuthorizationChange()
+        XCTAssertEqual(fakeDelegate.receivedErrors.count, 1, "Should not emit duplicate errors on repeated callback")
+        XCTAssertEqual(fakeManager.requestAlwaysCount, 1, "Should not request Always again on repeated callback")
+    }
+
     // handleAuthorizationChange before startMonitoring is called is a no-op.
     func testAuthorizationCallbackBeforeStartMonitoringDoesNothing() {
         let (sut, fakeManager, _) = makeSUT(status: .authorizedWhenInUse)
