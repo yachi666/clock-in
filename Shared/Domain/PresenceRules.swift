@@ -20,14 +20,15 @@ struct PresenceRules {
     }
 
     func buildAttendanceDay(arrivedAt: Date, leftAt: Date?) -> AttendanceDay {
+        let validLeftAt = leftAt.flatMap { $0 >= arrivedAt ? $0 : nil }
         let identifier = dayIdentifier(for: arrivedAt, calendar: calendar)
-        let duration = leftAt.map { max(0, $0.timeIntervalSince(arrivedAt)) } ?? 0
+        let duration = validLeftAt.map { $0.timeIntervalSince(arrivedAt) } ?? 0
         return AttendanceDay(
             dayIdentifier: identifier,
             arrivedAt: arrivedAt,
-            leftAt: leftAt,
+            leftAt: validLeftAt,
             totalDuration: duration,
-            status: leftAt.map { arrivedAt <= $0 } == true ? .present : .pending
+            status: validLeftAt == nil ? .pending : .present
         )
     }
 }
