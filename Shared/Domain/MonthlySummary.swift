@@ -9,6 +9,8 @@ struct MonthlySummary: Equatable {
     let presentDays: Int
     let workingDays: Int
 
+    /// - Throws: `MonthlySummaryError` for invalid month identifiers and
+    ///   propagates holiday calendar parsing errors while counting workdays.
     init(
         monthIdentifier: String,
         attendanceDays: [AttendanceDay],

@@ -300,6 +300,7 @@ private extension MonthlySummary {
     }
 }
 
+// TODO: Task 9 - replace this placeholder with real SwiftData/cache-backed data.
 extension MonthlySummary {
     static let sample = MonthlySummary(placeholder: "2026-04", presentDays: 15, workingDays: 22)
 }
