@@ -24,6 +24,8 @@ struct HolidayCalendar: Codable, Equatable {
                 return false
             case .transferWorkday:
                 return true
+            case .unknown:
+                break
             }
         }
 
@@ -33,7 +35,7 @@ struct HolidayCalendar: Codable, Equatable {
     }
 }
 
-struct HolidayEntry: Codable, Equatable {
+struct HolidayEntry: Equatable {
     var date: String
     var name: String
     var type: HolidayEntryType
@@ -42,6 +44,29 @@ struct HolidayEntry: Codable, Equatable {
 enum HolidayEntryType: String, Codable, Equatable {
     case publicHoliday = "public_holiday"
     case transferWorkday = "transfer_workday"
+    case unknown
+}
+
+extension HolidayEntry: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case date
+        case name
+        case type
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        date = try container.decode(String.self, forKey: .date)
+        name = try container.decode(String.self, forKey: .name)
+        type = (try? container.decode(HolidayEntryType.self, forKey: .type)) ?? .unknown
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(date, forKey: .date)
+        try container.encode(name, forKey: .name)
+        try container.encode(type, forKey: .type)
+    }
 }
 
 enum HolidayCalendarError: Error, Equatable {
@@ -49,16 +74,26 @@ enum HolidayCalendarError: Error, Equatable {
 }
 
 enum DateParser {
-    static func date(from dayIdentifier: String, calendar: Calendar) throws -> Date {
+    private static let lock = NSLock()
+    private static let parser: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.timeZone = calendar.timeZone
+        formatter.calendar = .gregorianCN
+        formatter.timeZone = Calendar.gregorianCN.timeZone
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
-        guard let date = formatter.date(from: dayIdentifier) else {
-            throw HolidayCalendarError.invalidDate(dayIdentifier)
+        formatter.isLenient = false
+        return formatter
+    }()
+
+    static func date(from dayIdentifier: String, calendar: Calendar) throws -> Date {
+        try Self.lock.withLock {
+            Self.parser.calendar = calendar
+            Self.parser.timeZone = calendar.timeZone
+            guard let date = Self.parser.date(from: dayIdentifier) else {
+                throw HolidayCalendarError.invalidDate(dayIdentifier)
+            }
+            return date
         }
-        return date
     }
 }
 
