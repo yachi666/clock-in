@@ -255,21 +255,16 @@ struct DashboardView: View {
     private static let weekdayLabels = ["S", "M", "T", "W", "T", "F", "S"]
     private static let dashboardCoordinateSpace = "DashboardCoordinateSpace"
 
-    // Popover height is content-derived:
-    //   Base card (pill + date row): 96 pt
-    //   + Holiday text row:          +20 pt → 116 pt
-    //   + Attendance block:          +48 pt → 144 pt
-    //   + Both present:              +68 pt → 164 pt
     static func popoverSize(for day: DashboardCalendarDay) -> CGSize {
         switch (day.attendance != nil, day.holiday != nil) {
         case (true, true):
-            return CGSize(width: 224, height: 164)
+            return CGSize(width: 224, height: 172)
         case (true, false):
-            return CGSize(width: 224, height: 144)
+            return CGSize(width: 224, height: 152)
         case (false, true):
-            return CGSize(width: 224, height: 116)
+            return CGSize(width: 224, height: 124)
         case (false, false):
-            return CGSize(width: 224, height: 96)
+            return CGSize(width: 224, height: 104)
         }
     }
 }
@@ -288,54 +283,83 @@ private struct FigmaDayCell: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("\(day.date)")
-                .font(.system(size: 14, weight: dateWeight))
-                .foregroundStyle(dateColor)
-                .frame(width: 28, height: 22)
-                .overlay {
-                    if day.isToday {
-                        Capsule()
-                            .stroke(Color.figmaProgress.opacity(0.26), lineWidth: 1)
-                    }
-                }
-
-            ZStack {
+            ZStack(alignment: .topTrailing) {
+                dateLabel
                 holidayBadge
-
-                switch day.status {
-                case .present:
-                    Circle()
-                        .fill(Color.figmaIndigo)
-                        .frame(width: isSelected ? 8 : 6, height: isSelected ? 8 : 6)
-                case .future:
-                    Circle()
-                        .fill(Color.figmaFutureDot)
-                        .frame(width: 4, height: 4)
-                case .incomplete:
-                    Circle()
-                        .stroke(Color.figmaIncompleteDot, lineWidth: 1)
-                        .frame(width: 7, height: 7)
-                case .empty:
-                    Color.clear
-                }
+                    .offset(x: 9, y: -6)
             }
-            .frame(width: 8, height: 8)
+            .frame(width: 34, height: 24)
+
+            marker
+                .frame(width: 14, height: 8)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 34)
         .contentShape(Rectangle())
     }
 
+    private var dateLabel: some View {
+        Text("\(day.date)")
+            .font(.system(size: 14, weight: dateWeight))
+            .foregroundStyle(dateColor)
+            .frame(width: 32, height: 22)
+            .background(dateBackground, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay {
+                if day.isToday {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .inset(by: 1)
+                        .stroke(Color.figmaTodayStroke, lineWidth: 1)
+                }
+            }
+    }
+
+    private var dateBackground: AnyShapeStyle {
+        if day.status == .present {
+            AnyShapeStyle(
+                LinearGradient(
+                    colors: [Color.figmaPresentWash.opacity(0.22), Color.clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+        } else {
+            AnyShapeStyle(Color.clear)
+        }
+    }
+
+    @ViewBuilder
+    private var marker: some View {
+        switch DashboardDayVisualSemantics.marker(for: day) {
+        case .presentSignal:
+            Capsule()
+                .fill(isSelected ? Color.figmaPresentSignal : Color.figmaPresentSignal.opacity(0.78))
+                .frame(width: isSelected ? 14 : 12, height: 4)
+        case .futureDot:
+            Circle()
+                .fill(Color.figmaFutureDot)
+                .frame(width: 4, height: 4)
+        case .incompleteRing:
+            Circle()
+                .stroke(Color.figmaIncompleteDot, lineWidth: 1)
+                .frame(width: 7, height: 7)
+        case .none:
+            Color.clear
+        }
+    }
+
     private var dateWeight: Font.Weight {
-        day.status == .present || day.status == .incomplete ? .medium : .regular
+        DashboardDayVisualSemantics.emphasizesDate(for: day) ? .semibold : .regular
     }
 
     private var dateColor: Color {
         if !day.isCurrentMonth {
             return Color.figmaOutOfMonthText
         }
+
         switch day.status {
-        case .present, .incomplete:
+        case .present:
+            return Color.figmaProgress
+        case .incomplete:
             return .black
         case .future:
             return Color.figmaMutedText
@@ -346,11 +370,19 @@ private struct FigmaDayCell: View {
 
     @ViewBuilder
     private var holidayBadge: some View {
-        if let holiday = day.holiday {
-            Text(holiday.type == .transferWorkday ? "班" : "休")
-                .font(.system(size: 8, weight: .medium))
-                .foregroundStyle(holiday.type == .transferWorkday ? Color.figmaSecondaryText : Color.figmaHolidayText)
-                .offset(x: 14, y: -22)
+        switch DashboardDayVisualSemantics.badge(for: day) {
+        case .none:
+            EmptyView()
+        case let .label(text, tone):
+            Text(text)
+                .font(.system(size: 8, weight: .semibold))
+                .foregroundStyle(tone == .holiday ? Color.figmaHolidayBadgeText : Color.figmaTransferBadgeText)
+                .padding(.horizontal, 4)
+                .frame(height: 16)
+                .background(
+                    tone == .holiday ? Color.figmaHolidayBadgeFill : Color.figmaTransferBadgeFill,
+                    in: Capsule()
+                )
         }
     }
 }
@@ -372,40 +404,45 @@ private struct DayTimePopover: View {
     }()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 13) {
             statusPill
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 7) {
                 Text(displayDate)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.black)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.figmaPopoverPrimaryText)
 
                 if let holiday = day.holiday {
                     Text(holidayText(holiday))
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(holiday.type == .transferWorkday ? Color.figmaSecondaryText : Color.figmaHolidayText)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(holiday.type == .transferWorkday ? Color.figmaTransferBadgeText : Color.figmaHolidayText)
                         .lineLimit(1)
                 }
             }
 
             if let attendance = day.attendance {
-                VStack(spacing: 7) {
+                VStack(spacing: 8) {
                     timeRow("Arrived", value: formatted(attendance.arrivedAt))
                     timeRow("Left", value: formatted(attendance.leftAt))
                 }
                 .padding(.top, 2)
+            } else {
+                Text(DashboardPopoverStatus.status(for: day).label)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.figmaPopoverSecondaryText)
+                    .padding(.top, 2)
             }
         }
         .padding(.horizontal, 18)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .background(Color.white.opacity(0.68), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(.vertical, 17)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(Color.white.opacity(0.82), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.white.opacity(0.72), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(Color.white.opacity(0.86), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+        .shadow(color: .black.opacity(0.14), radius: 28, y: 14)
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
         .allowsHitTesting(false)
     }
 
@@ -437,11 +474,11 @@ private struct DayTimePopover: View {
     private func timeRow(_ label: String, value: String) -> some View {
         HStack {
             Text(label)
-                .foregroundStyle(Color.figmaMutedText)
+                .foregroundStyle(Color.figmaPopoverSecondaryText)
             Spacer(minLength: 20)
             Text(value)
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundStyle(value == "--:--" ? Color.figmaMutedText : .black)
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(value == "--:--" ? Color.figmaMutedText : Color.figmaPopoverPrimaryText)
         }
         .font(.system(size: 13, weight: .regular))
     }
@@ -507,6 +544,15 @@ private extension Color {
     static let figmaPopover = Color(red: 249 / 255, green: 250 / 255, blue: 251 / 255)
     static let figmaBorder = Color(red: 229 / 255, green: 231 / 255, blue: 235 / 255)
     static let figmaHolidayText = Color(red: 220 / 255, green: 38 / 255, blue: 38 / 255)
+    static let figmaTodayStroke = Color(red: 99 / 255, green: 102 / 255, blue: 241 / 255).opacity(0.24)
+    static let figmaPresentWash = Color(red: 99 / 255, green: 102 / 255, blue: 241 / 255)
+    static let figmaPresentSignal = Color(red: 31 / 255, green: 41 / 255, blue: 55 / 255)
+    static let figmaHolidayBadgeFill = Color(red: 254 / 255, green: 226 / 255, blue: 226 / 255)
+    static let figmaHolidayBadgeText = Color(red: 185 / 255, green: 28 / 255, blue: 28 / 255)
+    static let figmaTransferBadgeFill = Color(red: 241 / 255, green: 245 / 255, blue: 249 / 255)
+    static let figmaTransferBadgeText = Color(red: 71 / 255, green: 85 / 255, blue: 105 / 255)
+    static let figmaPopoverPrimaryText = Color(red: 15 / 255, green: 23 / 255, blue: 42 / 255)
+    static let figmaPopoverSecondaryText = Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255)
 }
 
 // Placeholder initializer for display fixtures and unavailable holiday state.
