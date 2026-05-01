@@ -63,7 +63,7 @@ Presence 当前处于 **早期阶段（early-stage）/ 设计优先（design-fir
 - `docs/superpowers/specs/` —— 设计决策与功能规格
 - `docs/superpowers/plans/` —— 已批准工作的实现计划
 - `figma/` —— 设计 / 原型相关资源与实验
-- `Shared/` —— 跨平台共享代码与资源
+- `Shared/` —— 多个目标共享的 Swift 代码与资源
 - `Presence/`、`PresenceTests/`、`PresenceWidget/` —— 原生 iOS 应用、测试与 Widget 目标
 
 ## 🤝 参与贡献
