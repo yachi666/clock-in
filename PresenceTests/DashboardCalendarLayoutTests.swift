@@ -266,6 +266,96 @@ final class DashboardCalendarLayoutTests: XCTestCase {
         XCTAssertEqual(DashboardPopoverStatus.status(for: emptyDay), .noRecord)
     }
 
+    func testDayVisualSemanticsMapsStatusToQuietHaloMarkers() {
+        let presentDay = DashboardCalendarDay(
+            id: "2026-05-01",
+            date: 1,
+            identifier: "2026-05-01",
+            status: .present,
+            isCurrentMonth: true,
+            attendance: AttendanceDay(
+                dayIdentifier: "2026-05-01",
+                arrivedAt: Date(timeIntervalSince1970: 1_777_555_200),
+                leftAt: Date(timeIntervalSince1970: 1_777_589_400),
+                totalDuration: 34_200,
+                status: .present
+            )
+        )
+        let incompleteDay = DashboardCalendarDay(
+            id: "2026-05-02",
+            date: 2,
+            identifier: "2026-05-02",
+            status: .incomplete,
+            isCurrentMonth: true,
+            attendance: AttendanceDay(
+                dayIdentifier: "2026-05-02",
+                arrivedAt: Date(timeIntervalSince1970: 1_777_641_600),
+                leftAt: nil,
+                totalDuration: 0,
+                status: .pending
+            )
+        )
+        let futureDay = DashboardCalendarDay(
+            id: "2026-05-03",
+            date: 3,
+            identifier: "2026-05-03",
+            status: .future,
+            isCurrentMonth: true,
+            attendance: nil
+        )
+        let emptyDay = DashboardCalendarDay(
+            id: "2026-05-04",
+            date: 4,
+            identifier: "2026-05-04",
+            status: .empty,
+            isCurrentMonth: true,
+            attendance: nil
+        )
+
+        XCTAssertEqual(DashboardDayVisualSemantics.marker(for: presentDay), .presentSignal)
+        XCTAssertEqual(DashboardDayVisualSemantics.marker(for: incompleteDay), .incompleteRing)
+        XCTAssertEqual(DashboardDayVisualSemantics.marker(for: futureDay), .futureDot)
+        XCTAssertEqual(DashboardDayVisualSemantics.marker(for: emptyDay), .none)
+
+        XCTAssertTrue(DashboardDayVisualSemantics.emphasizesDate(for: presentDay))
+        XCTAssertTrue(DashboardDayVisualSemantics.emphasizesDate(for: incompleteDay))
+        XCTAssertFalse(DashboardDayVisualSemantics.emphasizesDate(for: futureDay))
+        XCTAssertFalse(DashboardDayVisualSemantics.emphasizesDate(for: emptyDay))
+    }
+
+    func testDayVisualSemanticsReturnsHolidayBadgeTextAndTone() {
+        let holidayDay = DashboardCalendarDay(
+            id: "2026-05-01",
+            date: 1,
+            identifier: "2026-05-01",
+            status: .empty,
+            isCurrentMonth: true,
+            holiday: HolidayEntry(date: "2026-05-01", name: "劳动节", type: .publicHoliday),
+            attendance: nil
+        )
+        let transferWorkday = DashboardCalendarDay(
+            id: "2026-05-10",
+            date: 10,
+            identifier: "2026-05-10",
+            status: .empty,
+            isCurrentMonth: true,
+            holiday: HolidayEntry(date: "2026-05-10", name: "补班", type: .transferWorkday),
+            attendance: nil
+        )
+        let ordinaryDay = DashboardCalendarDay(
+            id: "2026-05-12",
+            date: 12,
+            identifier: "2026-05-12",
+            status: .empty,
+            isCurrentMonth: true,
+            attendance: nil
+        )
+
+        XCTAssertEqual(DashboardDayVisualSemantics.badge(for: holidayDay), .label(text: "休", tone: .holiday))
+        XCTAssertEqual(DashboardDayVisualSemantics.badge(for: transferWorkday), .label(text: "班", tone: .transferWorkday))
+        XCTAssertEqual(DashboardDayVisualSemantics.badge(for: ordinaryDay), .none)
+    }
+
     func testPopoverSizeMatchesVisibleContentBuckets() {
         let attendance = AttendanceDay(
             dayIdentifier: "2026-05-01",

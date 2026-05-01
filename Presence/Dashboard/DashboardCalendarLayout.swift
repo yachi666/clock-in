@@ -216,6 +216,53 @@ enum DashboardPopoverStatus: Equatable {
     }
 }
 
+enum DashboardDayMarkerStyle: Equatable {
+    case none
+    case futureDot
+    case incompleteRing
+    case presentSignal
+}
+
+enum DashboardHolidayBadgeTone: Equatable {
+    case holiday
+    case transferWorkday
+}
+
+enum DashboardHolidayBadgeStyle: Equatable {
+    case none
+    case label(text: String, tone: DashboardHolidayBadgeTone)
+}
+
+enum DashboardDayVisualSemantics {
+    static func marker(for day: DashboardCalendarDay) -> DashboardDayMarkerStyle {
+        switch day.status {
+        case .present:
+            return .presentSignal
+        case .future:
+            return .futureDot
+        case .incomplete:
+            return .incompleteRing
+        case .empty:
+            return .none
+        }
+    }
+
+    static func badge(for day: DashboardCalendarDay) -> DashboardHolidayBadgeStyle {
+        guard let holiday = day.holiday else { return .none }
+
+        switch holiday.type {
+        case .publicHoliday, .unknown:
+            return .label(text: "休", tone: .holiday)
+        case .transferWorkday:
+            return .label(text: "班", tone: .transferWorkday)
+        }
+    }
+
+    static func emphasizesDate(for day: DashboardCalendarDay) -> Bool {
+        day.status == .present || day.status == .incomplete
+    }
+}
+
 enum DashboardCalendarHitTester {
     static func day(at point: CGPoint, in size: CGSize, days: [DashboardCalendarDay], columns: Int = 7) -> DashboardCalendarDay? {
         guard point.x >= 0,
