@@ -6,9 +6,15 @@ xcuserdata/
 # Build artefacts
 build/
 DerivedData/
+dist/
+coverage/
 
 # macOS
 .DS_Store
+
+# JavaScript dependencies and local caches
+node_modules/
+.vite/
 
 # Local brainstorming mockups
 .superpowers/
