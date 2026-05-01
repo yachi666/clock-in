@@ -368,19 +368,19 @@ final class DashboardCalendarLayoutTests: XCTestCase {
 
         XCTAssertEqual(
             DashboardView.popoverSize(for: popoverDay(attendance: attendance, holiday: holiday)),
-            CGSize(width: 224, height: 164)
+            CGSize(width: 224, height: 172)
         )
         XCTAssertEqual(
             DashboardView.popoverSize(for: popoverDay(attendance: attendance, holiday: nil)),
-            CGSize(width: 224, height: 144)
+            CGSize(width: 224, height: 152)
         )
         XCTAssertEqual(
             DashboardView.popoverSize(for: popoverDay(attendance: nil, holiday: holiday)),
-            CGSize(width: 224, height: 116)
+            CGSize(width: 224, height: 124)
         )
         XCTAssertEqual(
             DashboardView.popoverSize(for: popoverDay(attendance: nil, holiday: nil)),
-            CGSize(width: 224, height: 96)
+            CGSize(width: 224, height: 104)
         )
     }
 
