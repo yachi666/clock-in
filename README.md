@@ -64,6 +64,7 @@ Planned asset paths:
 - `docs/superpowers/plans/` — implementation plans for approved work
 - `figma/` — design/prototype-related assets and experiments
 - `Presence/`, `PresenceTests/`, `PresenceWidget/` — native iOS app, tests, and widget targets
+- `Shared/` — shared Swift code and resources used across multiple targets
 
 ## 🤝 Contributing
 
