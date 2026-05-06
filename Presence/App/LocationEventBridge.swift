@@ -53,6 +53,7 @@ final class LocationEventBridge: LocationMonitorDelegate {
         pendingValidationTask = Task { [weak self] in
             guard let self else { return }
             do {
+                try await self.coordinator.recordCandidate(event)
                 try await self.sleep(self.debounceInterval)
                 // A newer event can cancel this task after sleep returns but before validation runs.
                 try Task.checkCancellation()

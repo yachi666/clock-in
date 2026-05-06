@@ -76,6 +76,9 @@ struct RootView: View {
                 coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
                 radius: radiusMeters
             )
+            if let coordinator = trackingSession.coordinator {
+                processPendingCandidates(with: coordinator)
+            }
             return
         }
 
@@ -92,6 +95,17 @@ struct RootView: View {
         trackingSession.coordinator = coordinator
         trackingSession.locationMonitor = monitor
         trackingSession.bridge = bridge
+        processPendingCandidates(with: coordinator)
+    }
+
+    private func processPendingCandidates(with coordinator: TrackingCoordinator) {
+        Task {
+            do {
+                try await coordinator.processPendingCandidates(validationDate: Date())
+            } catch {
+                logger.error("Failed to process pending tracking candidates: \(error, privacy: .public)")
+            }
+        }
     }
 }
 

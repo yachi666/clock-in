@@ -8,10 +8,22 @@ final class TrackingCoordinatorTests: XCTestCase {
 
     @MainActor
     final class FakeTrackingStore: TrackingStore {
+        var candidateEvents: [PresenceEvent] = []
         var savedEvents: [PresenceEvent] = []
+        var pendingEvents: [PresenceEvent] = []
         var shouldThrow = false
 
         enum StoreError: Error { case failed }
+
+        func saveCandidate(_ event: PresenceEvent) async throws {
+            if shouldThrow { throw StoreError.failed }
+            candidateEvents.append(event)
+        }
+
+        func pendingCandidates(eligibleAt date: Date) async throws -> [PresenceEvent] {
+            if shouldThrow { throw StoreError.failed }
+            return pendingEvents
+        }
 
         func save(_ event: PresenceEvent) async throws {
             if shouldThrow { throw StoreError.failed }
@@ -45,6 +57,32 @@ final class TrackingCoordinatorTests: XCTestCase {
     }
 
     // MARK: - Pending (sub-10-minute and exactly 600 s = not yet validated)
+
+    func testRecordCandidatePersistsRawEventWithoutActivitySideEffects() async throws {
+        let (sut, store, activity) = makeSUT()
+        let event = PresenceEvent(kind: .enter, occurredAt: t0)
+
+        try await sut.recordCandidate(event)
+
+        XCTAssertEqual(store.candidateEvents, [event])
+        XCTAssertTrue(store.savedEvents.isEmpty)
+        XCTAssertTrue(activity.startedArrivals.isEmpty)
+        XCTAssertEqual(activity.endCallCount, 0)
+    }
+
+    func testProcessPendingCandidatesValidatesRecoveredEvents() async throws {
+        let store = FakeTrackingStore()
+        let activity = FakeActivityController()
+        let sut = TrackingCoordinator(store: store, activityController: activity)
+        let event = PresenceEvent(kind: .enter, occurredAt: t0)
+        store.pendingEvents = [event]
+
+        try await sut.processPendingCandidates(validationDate: t0.addingTimeInterval(601))
+
+        XCTAssertEqual(store.savedEvents, [event])
+        XCTAssertEqual(activity.startedArrivals, [t0])
+        XCTAssertEqual(activity.endCallCount, 0)
+    }
 
     func testPendingBeforeDebounceWindowDoesNotPersistOrTouchActivity() async throws {
         let (sut, store, activity) = makeSUT()

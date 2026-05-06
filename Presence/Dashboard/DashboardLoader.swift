@@ -8,7 +8,7 @@ struct DashboardLoader: View {
     @Environment(AppState.self) private var appState
 
     @State private var loadResult: DashboardLoadResult?
-    @State private var selectedMonthIdentifier = DashboardLoader.currentMonthIdentifier()
+    @State private var selectedMonthIdentifier = DashboardMonthNavigator.currentMonth()
 
     private let holidayService = HolidayService()
 
@@ -65,15 +65,16 @@ struct DashboardLoader: View {
                     selectedMonthIdentifier = DashboardMonthNavigator.nextMonth(from: selectedMonthIdentifier)
                 }
             },
+            onCurrentMonth: {
+                let currentMonth = DashboardMonthNavigator.currentMonth()
+                guard selectedMonthIdentifier != currentMonth else { return }
+                withAnimation(.easeOut(duration: 0.2)) {
+                    selectedMonthIdentifier = currentMonth
+                }
+            },
             onSetupTapped: {
                 appState.reopenSetup()
             }
         )
-    }
-
-    private static func currentMonthIdentifier(calendar: Calendar = .gregorianCN, now: Date = Date()) -> String {
-        let year = calendar.component(.year, from: now)
-        let month = calendar.component(.month, from: now)
-        return String(format: "%04d-%02d", year, month)
     }
 }

@@ -60,6 +60,51 @@ final class AttendanceStoreTrackingTests: XCTestCase {
         XCTAssertEqual(day.statusRawValue, AttendanceStatus.pending.rawValue)
     }
 
+    func testSaveCandidateStoresRawRegionEventWithoutAttendanceDay() async throws {
+        let arrivedAt = try date(2026, 5, 1, hour: 9, minute: 12)
+
+        try await store.saveCandidate(PresenceEvent(kind: .enter, occurredAt: arrivedAt))
+
+        let candidates = try await store.pendingCandidates(eligibleAt: arrivedAt.addingTimeInterval(599))
+        XCTAssertTrue(candidates.isEmpty)
+        let days = try fetchDays(inMonth: try date(2026, 5, 1))
+        XCTAssertTrue(days.isEmpty)
+    }
+
+    func testPendingCandidatesReturnsStaleCandidateForLaunchRecovery() async throws {
+        let arrivedAt = try date(2026, 5, 1, hour: 9, minute: 12)
+        let event = PresenceEvent(kind: .enter, occurredAt: arrivedAt)
+
+        try await store.saveCandidate(event)
+
+        let candidates = try await store.pendingCandidates(eligibleAt: arrivedAt.addingTimeInterval(601))
+        XCTAssertEqual(candidates, [event])
+    }
+
+    func testValidatedSaveUpgradesMatchingCandidateInsteadOfDuplicatingRegionEvent() async throws {
+        let arrivedAt = try date(2026, 5, 1, hour: 9, minute: 12)
+        let event = PresenceEvent(kind: .enter, occurredAt: arrivedAt)
+
+        try await store.saveCandidate(event)
+        try await store.save(event)
+
+        let candidates = try await store.pendingCandidates(eligibleAt: arrivedAt.addingTimeInterval(601))
+        XCTAssertTrue(candidates.isEmpty)
+    }
+
+    func testSupersededPendingCandidateIsIgnoredDuringLaunchRecovery() async throws {
+        let arrivedAt = try date(2026, 5, 1, hour: 9, minute: 12)
+        let bouncedExit = arrivedAt.addingTimeInterval(5)
+        let enter = PresenceEvent(kind: .enter, occurredAt: arrivedAt)
+        let exit = PresenceEvent(kind: .exit, occurredAt: bouncedExit)
+
+        try await store.saveCandidate(enter)
+        try await store.saveCandidate(exit)
+
+        let candidates = try await store.pendingCandidates(eligibleAt: bouncedExit.addingTimeInterval(601))
+        XCTAssertEqual(candidates, [exit])
+    }
+
     func testRecordCurrentArrivalCreatesPendingAttendanceDayImmediatelyAfterSetup() throws {
         let arrivedAt = try date(2026, 5, 1, hour: 9, minute: 12)
 

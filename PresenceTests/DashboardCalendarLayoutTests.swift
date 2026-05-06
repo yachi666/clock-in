@@ -9,6 +9,14 @@ final class DashboardCalendarLayoutTests: XCTestCase {
         XCTAssertEqual(DashboardMonthNavigator.nextMonth(from: "2026-12"), "2027-01")
     }
 
+    func testCurrentMonthIdentifierUsesProvidedCalendarAndDate() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
+        let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 5, day: 6, hour: 11)))
+
+        XCTAssertEqual(DashboardMonthNavigator.currentMonth(calendar: calendar, now: now), "2026-05")
+    }
+
     func testSwipeResolverOnlyChangesMonthForIntentionalHorizontalSwipes() {
         XCTAssertEqual(DashboardMonthSwipeResolver.change(for: CGSize(width: -88, height: 8)), .next)
         XCTAssertEqual(DashboardMonthSwipeResolver.change(for: CGSize(width: 88, height: -8)), .previous)

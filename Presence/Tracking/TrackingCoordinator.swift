@@ -1,6 +1,8 @@
 import Foundation
 
 protocol TrackingStore: Sendable {
+    func saveCandidate(_ event: PresenceEvent) async throws
+    func pendingCandidates(eligibleAt date: Date) async throws -> [PresenceEvent]
     func save(_ event: PresenceEvent) async throws
 }
 
@@ -22,6 +24,17 @@ final class TrackingCoordinator: Sendable {
         self.rules = rules
         self.store = store
         self.activityController = activityController
+    }
+
+    func recordCandidate(_ event: PresenceEvent) async throws {
+        try await store.saveCandidate(event)
+    }
+
+    func processPendingCandidates(validationDate: Date) async throws {
+        let candidates = try await store.pendingCandidates(eligibleAt: validationDate)
+        for candidate in candidates {
+            try await handleCandidate(candidate, validationDate: validationDate)
+        }
     }
 
     func handleCandidate(_ event: PresenceEvent, validationDate: Date) async throws {

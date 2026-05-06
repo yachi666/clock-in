@@ -116,6 +116,12 @@ enum DashboardMonthChange: Equatable {
 }
 
 enum DashboardMonthNavigator {
+    static func currentMonth(calendar: Calendar = .gregorianCN, now: Date = Date()) -> String {
+        let year = calendar.component(.year, from: now)
+        let month = calendar.component(.month, from: now)
+        return String(format: "%04d-%02d", year, month)
+    }
+
     static func previousMonth(from monthIdentifier: String, calendar: Calendar = .gregorianCN) -> String {
         adjacentMonth(from: monthIdentifier, offset: -1, calendar: calendar)
     }
