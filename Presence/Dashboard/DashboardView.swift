@@ -8,6 +8,7 @@ struct DashboardView: View {
     var workingDaysUnavailable: Bool = false
     var onPreviousMonth: (() -> Void)?
     var onNextMonth: (() -> Void)?
+    var onCurrentMonth: (() -> Void)?
     var onSetupTapped: (() -> Void)?
 
     @State private var selectedDay: DashboardCalendarDay?
@@ -94,6 +95,7 @@ struct DashboardView: View {
         }
         .fontDesign(.default)
         .simultaneousGesture(monthSwipeGesture)
+        .simultaneousGesture(returnToCurrentMonthGesture)
         .onPreferenceChange(DashboardDayGridFramePreferenceKey.self) { dayGridFrame = $0 }
         .animation(.easeOut(duration: 0.2), value: selectedDay?.id)
     }
@@ -208,6 +210,16 @@ struct DashboardView: View {
                 case .next:
                     onNextMonth?()
                 }
+            }
+    }
+
+    private var returnToCurrentMonthGesture: some Gesture {
+        LongPressGesture(minimumDuration: 0.55)
+            .onEnded { _ in
+                clearSelectedDay()
+                markGestureHintSeen()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                onCurrentMonth?()
             }
     }
 

@@ -14,7 +14,18 @@ final class LocationEventBridgeTests: XCTestCase {
 
     @MainActor
     final class SpyStore: TrackingStore {
+        var candidateEvents: [PresenceEvent] = []
         var savedEvents: [PresenceEvent] = []
+        var pendingEvents: [PresenceEvent] = []
+
+        func saveCandidate(_ event: PresenceEvent) async throws {
+            candidateEvents.append(event)
+        }
+
+        func pendingCandidates(eligibleAt date: Date) async throws -> [PresenceEvent] {
+            pendingEvents
+        }
+
         func save(_ event: PresenceEvent) async throws {
             savedEvents.append(event)
         }
@@ -74,6 +85,18 @@ final class LocationEventBridgeTests: XCTestCase {
     }
 
     // MARK: - Enter event persisted after debounce
+
+    func testEnterEventStoresCandidateBeforeDebounceValidation() async {
+        let store = SpyStore()
+        let clock = FakeClock(now: t0.addingTimeInterval(600))
+        let bridge = makeBridge(store: store, activity: SpyActivity(), clock: clock)
+
+        bridge.locationMonitorDidEnterRegion(at: t0)
+        await bridge.pendingValidationTask?.value
+
+        XCTAssertEqual(store.candidateEvents, [PresenceEvent(kind: .enter, occurredAt: t0)])
+        XCTAssertTrue(store.savedEvents.isEmpty)
+    }
 
     func testEnterEventPersistedAndActivityStartedAfterDebounce() async {
         let store = SpyStore()

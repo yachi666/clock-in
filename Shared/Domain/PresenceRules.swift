@@ -13,6 +13,10 @@ struct PresenceRules {
         now.timeIntervalSince(event.occurredAt) > debounceInterval ? .validated(event) : .pending
     }
 
+    func isSuperseded(candidate event: PresenceEvent, by laterDate: Date) -> Bool {
+        laterDate > event.occurredAt && laterDate.timeIntervalSince(event.occurredAt) <= debounceInterval
+    }
+
     func attendanceDayIdentifier(forExitAt date: Date) -> String {
         let hour = calendar.component(.hour, from: date)
         let attributedDate = (hour < 4 ? calendar.date(byAdding: .day, value: -1, to: date) : nil) ?? date

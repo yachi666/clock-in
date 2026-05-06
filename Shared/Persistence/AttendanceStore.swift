@@ -91,6 +91,38 @@ enum AttendanceStoreError: Error, Equatable {
 // MARK: - TrackingStore conformance
 
 extension AttendanceStore: TrackingStore {
+    func saveCandidate(_ event: PresenceEvent) async throws {
+        try saveRegionEventIfNeeded(event, isValidated: false)
+    }
+
+    func pendingCandidates(eligibleAt date: Date) async throws -> [PresenceEvent] {
+        let descriptor = FetchDescriptor<RegionEventModel>(
+            predicate: #Predicate { $0.isValidated == false },
+            sortBy: [SortDescriptor(\.occurredAt)]
+        )
+        let pendingModels = try context.fetch(descriptor)
+        var candidates: [PresenceEvent] = []
+
+        for model in pendingModels {
+            guard let kind = PresenceEvent.Kind(rawValue: model.kindRawValue) else {
+                context.delete(model)
+                continue
+            }
+
+            let event = PresenceEvent(kind: kind, occurredAt: model.occurredAt)
+            guard case .validated = rules.validate(candidate: event, at: date) else { continue }
+
+            if try hasLaterRegionEventSuperseding(event) {
+                context.delete(model)
+            } else {
+                candidates.append(event)
+            }
+        }
+
+        try context.save()
+        return candidates
+    }
+
     func save(_ event: PresenceEvent) async throws {
         switch event.kind {
         case .enter: try saveValidatedEnter(event)
@@ -99,7 +131,7 @@ extension AttendanceStore: TrackingStore {
     }
 
     private func saveValidatedEnter(_ event: PresenceEvent) throws {
-        context.insert(RegionEventModel(kind: event.kind, occurredAt: event.occurredAt, isValidated: true))
+        try markRegionEventValidated(event)
 
         let id = rules.enterDayIdentifier(for: event.occurredAt)
         var descriptor = FetchDescriptor<AttendanceDayModel>(
@@ -126,7 +158,7 @@ extension AttendanceStore: TrackingStore {
     }
 
     private func saveValidatedExit(_ event: PresenceEvent) throws {
-        context.insert(RegionEventModel(kind: event.kind, occurredAt: event.occurredAt, isValidated: true))
+        try markRegionEventValidated(event)
 
         // Find the latest validated enter in this exit's attendance window.
         let exitTime = event.occurredAt
@@ -182,5 +214,51 @@ extension AttendanceStore: TrackingStore {
         model.statusRawValue = day.status.rawValue
 
         try context.save()
+    }
+
+    private func saveRegionEventIfNeeded(_ event: PresenceEvent, isValidated: Bool) throws {
+        let kind = event.kind.rawValue
+        let occurredAt = event.occurredAt
+        var descriptor = FetchDescriptor<RegionEventModel>(
+            predicate: #Predicate {
+                $0.kindRawValue == kind && $0.occurredAt == occurredAt && $0.isValidated == isValidated
+            }
+        )
+        descriptor.fetchLimit = 1
+
+        if try context.fetch(descriptor).isEmpty {
+            context.insert(RegionEventModel(kind: event.kind, occurredAt: event.occurredAt, isValidated: isValidated))
+            try context.save()
+        }
+    }
+
+    private func markRegionEventValidated(_ event: PresenceEvent) throws {
+        let kind = event.kind.rawValue
+        let occurredAt = event.occurredAt
+        var pendingDescriptor = FetchDescriptor<RegionEventModel>(
+            predicate: #Predicate {
+                $0.kindRawValue == kind && $0.occurredAt == occurredAt && $0.isValidated == false
+            }
+        )
+        pendingDescriptor.fetchLimit = 1
+
+        if let pending = try context.fetch(pendingDescriptor).first {
+            pending.isValidated = true
+            return
+        }
+
+        try saveRegionEventIfNeeded(event, isValidated: true)
+    }
+
+    private func hasLaterRegionEventSuperseding(_ event: PresenceEvent) throws -> Bool {
+        let occurredAt = event.occurredAt
+        let descriptor = FetchDescriptor<RegionEventModel>(
+            predicate: #Predicate { $0.occurredAt > occurredAt },
+            sortBy: [SortDescriptor(\.occurredAt)]
+        )
+
+        return try context.fetch(descriptor).contains { later in
+            rules.isSuperseded(candidate: event, by: later.occurredAt)
+        }
     }
 }
