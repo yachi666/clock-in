@@ -194,7 +194,8 @@ extension AttendanceStore: TrackingStore {
             effectiveArrival = enterOccurredAt
         }
 
-        let day = rules.buildAttendanceDay(arrivedAt: effectiveArrival, leftAt: exitTime)
+        let effectiveLeft = max(existingDay?.leftAt ?? exitTime, exitTime)
+        let day = rules.buildAttendanceDay(arrivedAt: effectiveArrival, leftAt: effectiveLeft)
         guard day.status == .present else {
             try context.save()
             return

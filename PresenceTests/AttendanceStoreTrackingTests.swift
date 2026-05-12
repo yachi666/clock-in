@@ -174,6 +174,49 @@ final class AttendanceStoreTrackingTests: XCTestCase {
         XCTAssertEqual(day.leftAt, exitTime, "leftAt must not be cleared by a later enter")
     }
 
+    /// A day with multiple leave/return cycles must keep the earliest arrival
+    /// and use the final validated exit as leftAt.
+    func testMultipleSameDayExitsUseFinalExitAsLeftAt() async throws {
+        let firstEnter = try date(2026, 5, 1, hour: 9, minute: 0)
+        let lunchExit = try date(2026, 5, 1, hour: 12, minute: 0)
+        let returnEnter = try date(2026, 5, 1, hour: 13, minute: 0)
+        let finalExit = try date(2026, 5, 1, hour: 18, minute: 30)
+
+        try await store.save(PresenceEvent(kind: .enter, occurredAt: firstEnter))
+        try await store.save(PresenceEvent(kind: .exit, occurredAt: lunchExit))
+        try await store.save(PresenceEvent(kind: .enter, occurredAt: returnEnter))
+        try await store.save(PresenceEvent(kind: .exit, occurredAt: finalExit))
+
+        let days = try fetchDays(inMonth: try date(2026, 5, 1))
+        XCTAssertEqual(days.count, 1)
+        let day = try XCTUnwrap(days.first)
+        XCTAssertEqual(day.statusRawValue, AttendanceStatus.present.rawValue)
+        XCTAssertEqual(day.arrivedAt, firstEnter)
+        XCTAssertEqual(day.leftAt, finalExit)
+        XCTAssertEqual(day.totalDuration, 9 * 3600 + 30 * 60, accuracy: 1)
+    }
+
+    /// If an earlier exit is processed after the final exit, it must not move
+    /// leftAt backward.
+    func testEarlierSameDayExitDoesNotOverwriteFinalExit() async throws {
+        let firstEnter = try date(2026, 5, 1, hour: 9, minute: 0)
+        let lunchExit = try date(2026, 5, 1, hour: 12, minute: 0)
+        let returnEnter = try date(2026, 5, 1, hour: 13, minute: 0)
+        let finalExit = try date(2026, 5, 1, hour: 18, minute: 30)
+
+        try await store.save(PresenceEvent(kind: .enter, occurredAt: firstEnter))
+        try await store.save(PresenceEvent(kind: .enter, occurredAt: returnEnter))
+        try await store.save(PresenceEvent(kind: .exit, occurredAt: finalExit))
+        try await store.save(PresenceEvent(kind: .exit, occurredAt: lunchExit))
+
+        let days = try fetchDays(inMonth: try date(2026, 5, 1))
+        XCTAssertEqual(days.count, 1)
+        let day = try XCTUnwrap(days.first)
+        XCTAssertEqual(day.arrivedAt, firstEnter)
+        XCTAssertEqual(day.leftAt, finalExit)
+        XCTAssertEqual(day.totalDuration, 9 * 3600 + 30 * 60, accuracy: 1)
+    }
+
     /// An exit with no prior enter in the same attribution window must not create
     /// a bogus attendance day from a previous day's enter.
     func testOrphanExitDoesNotPollutePreviousDay() async throws {

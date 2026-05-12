@@ -27,6 +27,7 @@ targets:
       - path: Presence
       - path: Shared
     resources:
+      - path: Presence/Assets.xcassets
       - path: Presence/Resources
         optional: true
     dependencies:
